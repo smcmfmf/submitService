@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>수강신청</title>
+</head>
+<body>
+<h1>수강신청</h1>
+<form th:action="@{/student/enroll}" method="post">
+    <label>과목코드:</label>
+    <input type="text" name="courseCode" placeholder="교수가 제공한 과목코드 입력" required>
+    <button type="submit">수강신청</button>
+</form>
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+<a href="/student/dashboard">대시보드로</a>
+</body>
+</html>

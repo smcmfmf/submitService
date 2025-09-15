@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입 - 과제 제출 시스템</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        .form-container { max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h2>회원가입</h2>
+    <form th:action="@{/signup}" method="post" th:object="${user}">
+        <input type="text" th:field="*{name}" placeholder="이름" required>
+        <input type="email" th:field="*{email}" placeholder="이메일" required>
+        <input type="password" th:field="*{password}" placeholder="비밀번호" required>
+        <select th:field="*{role}">
+            <option value="">역할 선택</option>
+            <option value="STUDENT">학생</option>
+            <option value="PROFESSOR">교수</option>
+        </select>
+        <button type="submit">가입하기</button>
+    </form>
+    <a href="/">로그인으로 돌아가기</a>
+</div>
+</body>
+</html>

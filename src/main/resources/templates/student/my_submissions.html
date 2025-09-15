@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 제출물 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .submission-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .graded { background-color: #e8f5e8; border-left: 4px solid #28a745; }
+        .ungraded { background-color: #fff3cd; border-left: 4px solid #ffc107; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
+        .grade-display { font-size: 18px; font-weight: bold; color: #28a745; }
+        .course-tag { background-color: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div class="nav-links">
+    <a href="/student/dashboard">← 대시보드로</a>
+</div>
+
+<h1>내 제출물 목록</h1>
+
+<div th:if="${#lists.isEmpty(submissions)}">
+    <p>아직 제출한 과제가 없습니다.</p>
+    <a href="/student/dashboard">대시보드에서 과제를 확인해보세요!</a>
+</div>
+
+<div th:each="submission : ${submissions}"
+     th:class="'submission-card ' + (${submission.grade != null} ? 'graded' : 'ungraded')">
+
+    <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div style="flex-grow: 1;">
+            <span class="course-tag" th:text="${submission.assignment.course.name}">과목명</span>
+            <h3 th:text="${submission.assignment.title}">과제 제목</h3>
+            <p><strong>제출일:</strong> <span th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일</span></p>
+            <p><strong>마감일:</strong> <span th:text="${#temporals.format(submission.assignment.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span></p>
+            <p><strong>제출 파일:</strong> <a th:href="${submission.fileUrl}" target="_blank">📄 파일 보기</a></p>
+        </div>
+
+        <div style="text-align: right;">
+            <div th:if="${submission.grade != null}">
+                <div class="grade-display" th:text="${submission.grade} + '점'">점수</div>
+                <small style="color: #28a745;">채점 완료</small>
+            </div>
+            <div th:unless="${submission.grade != null}">
+                <div style="color: #ffc107; font-weight: bold;">채점 대기중</div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${submission.feedback}" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
+        <strong>교수님 피드백:</strong>
+        <p th:text="${submission.feedback}" style="margin: 5px 0;">피드백 내용</p>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <a th:href="@{/student/assignment/{id}/my-submission(id=${submission.assignment.assignmentId})}"
+           style="color: #007bff; text-decoration: none;">📋 상세 보기</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 - 과제 제출 시스템</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        .form-container { max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h2>로그인</h2>
+    <form th:action="@{/login}" method="post">
+        <input type="email" name="email" placeholder="이메일" required>
+        <input type="password" name="password" placeholder="비밀번호" required>
+        <button type="submit">로그인</button>
+    </form>
+    <p th:if="${error}" th:text="${error}" style="color: red;"></p>
+    <a href="/signup">회원가입</a>
+</div>
+</body>
+</html>

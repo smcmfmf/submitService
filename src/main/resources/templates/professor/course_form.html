@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>새 과목 만들기</title>
+</head>
+<body>
+    <h1>새 과목 만들기</h1>
+    <form th:action="@{/professor/course/new}" method="post" th:object="${course}">
+        <label>과목명:</label>
+        <input type="text" th:field="*{name}" required>
+
+        <label>과목코드:</label>
+        <input type="text" th:field="*{code}" required>
+
+        <button type="submit">과목 생성</button>
+    </form>
+    <a href="/professor/dashboard">취소</a>
+</body>
+</html>

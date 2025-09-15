@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>학생 대시보드 - 과제 제출 시스템</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .course-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        nav a { margin-right: 20px; text-decoration: none; color: #333; }
+        nav a:hover { color: #4CAF50; }
+    </style>
+</head>
+<body>
+<h1>학생 대시보드</h1>
+<nav>
+    <a href="/student/enroll">수강 신청</a>
+    <a href="/student/submissions">내 제출물</a>
+    <a href="/logout">로그아웃</a>
+</nav>
+
+<h2>수강 과목 목록</h2>
+<div th:each="course : ${courses}" class="course-card">
+    <h3 th:text="${course.name}">과목명</h3>
+    <p>담당 교수: <span th:text="${course.professor.name}">교수명</span></p>
+    <a th:href="@{/student/course/{id}(id=${course.courseId})}">과제 확인</a>
+</div>
+
+<div th:if="${#lists.isEmpty(courses)}">
+    <p>아직 수강 중인 과목이 없습니다. <a href="/student/enroll">수강신청을 해보세요!</a></p>
+</div>
+</body>
+</html>

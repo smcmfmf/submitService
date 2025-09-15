@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>과제 제출</title>
+</head>
+<body>
+<h1>과제 제출</h1>
+<h2 th:text="${assignment.title}">과제 제목</h2>
+<p th:text="${assignment.description}">과제 설명</p>
+<p>마감일: <span th:text="${assignment.deadline}">마감일</span></p>
+
+<div th:if="${existingSubmission}">
+    <p style="color: orange;">이미 제출한 과제가 있습니다. 다시 제출하면 기존 제출물이 대체됩니다.</p>
+    <p>기존 제출 시간: <span th:text="${existingSubmission.submittedAt}">제출시간</span></p>
+</div>
+
+<form th:action="@{/student/assignment/{assignmentId}/submit(assignmentId=${assignment.assignmentId})}"
+      method="post" enctype="multipart/form-data">
+
+    <label>파일 선택:</label>
+    <input type="file" name="file" required>
+
+    <button type="submit">제출하기</button>
+</form>
+
+<a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}">취소</a>
+</body>
+</html>

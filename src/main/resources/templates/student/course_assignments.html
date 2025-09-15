@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${course.name} + ' - 과제 목록'">과제 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .assignment-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .deadline-soon { border-left: 4px solid #e74c3c; }
+        .deadline-passed { background-color: #f8f8f8; color: #666; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
+        .submit-btn { background-color: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; }
+        .submit-btn:hover { background-color: #0056b3; }
+        .submitted { background-color: #d4edda; }
+        .status { font-weight: bold; padding: 4px 8px; border-radius: 3px; }
+        .status.submitted { background-color: #28a745; color: white; }
+        .status.pending { background-color: #ffc107; color: black; }
+        .status.overdue { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="/student/dashboard">← 대시보드로</a>
+    </div>
+
+    <h1 th:text="${course.name}">과목명</h1>
+    <p><strong>담당 교수:</strong> <span th:text="${course.professor.name}">교수명</span></p>
+
+    <h2>과제 목록</h2>
+
+    <div th:if="${#lists.isEmpty(assignments)}">
+        <p>아직 등록된 과제가 없습니다.</p>
+    </div>
+
+    <div th:each="assignment : ${assignments}" class="assignment-card">
+        <h3 th:text="${assignment.title}">과제 제목</h3>
+        <p th:text="${assignment.description}">과제 설명</p>
+
+        <div style="margin: 10px 0;">
+            <p><strong>📅 마감일:</strong>
+                <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}"
+                      th:class="${#temporals.createNow().isAfter(assignment.deadline)} ? 'overdue' : ''">마감일</span>
+            </p>
+            <p th:if="${assignment.attachmentUrl}">
+                <strong>📎 첨부파일:</strong> <a th:href="${assignment.attachmentUrl}" target="_blank">다운로드</a>
+            </p>
+        </div>
+
+        <!-- 제출 상태 표시 (실제로는 컨트롤러에서 제출 정보를 함께 전달해야 함) -->
+        <div style="margin-top: 15px;">
+            <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}" class="submit-btn">
+                📤 과제 제출하기
+            </a>
+            <a th:href="@{/student/assignment/{id}/my-submission(id=${assignment.assignmentId})}"
+               style="margin-left: 10px; color: #007bff; text-decoration: none;">
+                📋 내 제출물 확인
+            </a>
+        </div>
+
+        <small style="color: #666;">
+            등록일: <span th:text="${#temporals.format(assignment.createdAt, 'yyyy-MM-dd')}">등록일</span>
+        </small>
+    </div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${assignment.title} + ' - 제출물 목록'">제출물 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .submission-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .graded { background-color: #e8f5e8; }
+        .ungraded { background-color: #fff3cd; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
+        .grade-btn { background-color: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; }
+        .grade-btn:hover { background-color: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}">← 과제 목록으로</a>
+        <a href="/professor/dashboard">대시보드로</a>
+    </div>
+
+    <h1 th:text="${assignment.title}">과제명</h1>
+    <p th:text="${assignment.description}">과제 설명</p>
+    <p>📅 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span></p>
+
+    <h2>제출물 목록 (<span th:text="${#lists.size(submissions)}">0</span>건)</h2>
+
+    <div th:if="${#lists.isEmpty(submissions)}">
+        <p>아직 제출된 과제가 없습니다.</p>
+    </div>
+
+    <table th:unless="${#lists.isEmpty(submissions)}">
+        <thead>
+            <tr>
+                <th>학생명</th>
+                <th>제출일시</th>
+                <th>파일</th>
+                <th>점수</th>
+                <th>상태</th>
+                <th>액션</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="submission : ${submissions}"
+                th:class="${submission.grade != null} ? 'graded' : 'ungraded'">
+                <td th:text="${submission.student.name}">학생명</td>
+                <td th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일시</td>
+                <td>
+                    <a th:href="${submission.fileUrl}" target="_blank">📄 파일 다운로드</a>
+                </td>
+                <td>
+                    <span th:if="${submission.grade != null}" th:text="${submission.grade} + '점'">점수</span>
+                    <span th:unless="${submission.grade != null}" style="color: #999;">미채점</span>
+                </td>
+                <td>
+                    <span th:if="${submission.grade != null}" style="color: #28a745; font-weight: bold;">채점 완료</span>
+                    <span th:unless="${submission.grade != null}" style="color: #ffc107; font-weight: bold;">채점 대기</span>
+                </td>
+                <td>
+                    <a th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" class="grade-btn">
+                        <span th:if="${submission.grade != null}">점수 수정</span>
+                        <span th:unless="${submission.grade != null}">채점하기</span>
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

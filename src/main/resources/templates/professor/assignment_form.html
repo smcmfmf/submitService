@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>새 과제 등록</title>
+</head>
+<body>
+    <h1>새 과제 등록</h1>
+    <form th:action="@{/professor/course/{courseId}/assignment/new(courseId=${courseId})}"
+          method="post" th:object="${assignment}">
+
+        <label>과제 제목:</label>
+        <input type="text" th:field="*{title}" required>
+
+        <label>과제 설명:</label>
+        <textarea th:field="*{description}" rows="5"></textarea>
+
+        <label>마감일:</label>
+        <input type="datetime-local" th:field="*{deadline}" required>
+
+        <label>첨부파일 URL (선택):</label>
+        <input type="text" th:field="*{attachmentUrl}">
+
+        <button type="submit">과제 등록</button>
+    </form>
+    <a th:href="@{/professor/course/{courseId}(courseId=${courseId})}">취소</a>
+</body>
+</html>

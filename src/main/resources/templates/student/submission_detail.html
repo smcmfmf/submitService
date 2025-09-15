@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>제출물 상세</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; }
+        .info-card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; }
+        .assignment-info { background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .submission-info { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .no-submission { background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .grade-display { font-size: 24px; font-weight: bold; color: #28a745; text-align: center; margin: 20px 0; }
+        .feedback-box { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 15px 0; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
+        .submit-btn { background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a th:href="@{/student/course/{id}(id=${assignment.course.courseId})}">← 과제 목록으로</a>
+        <a href="/student/dashboard">대시보드로</a>
+        <a href="/student/submissions">내 제출물 목록</a>
+    </div>
+
+    <h1>제출물 상세</h1>
+
+    <!-- 과제 정보 -->
+    <div class="assignment-info">
+        <h2 th:text="${assignment.title}">과제 제목</h2>
+        <p><strong>과목:</strong> <span th:text="${assignment.course.name}">과목명</span></p>
+        <p><strong>담당 교수:</strong> <span th:text="${assignment.course.professor.name}">교수명</span></p>
+        <p th:text="${assignment.description}">과제 설명</p>
+        <p><strong>📅 마감일:</strong> <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span></p>
+        <p th:if="${assignment.attachmentUrl}">
+            <strong>📎 첨부파일:</strong> <a th:href="${assignment.attachmentUrl}" target="_blank">다운로드</a>
+        </p>
+    </div>
+
+    <!-- 제출물이 있는 경우 -->
+    <div th:if="${submission}" class="submission-info">
+        <h3>내 제출 정보</h3>
+        <p><strong>제출일:</strong> <span th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일</span></p>
+        <p><strong>제출 파일:</strong> <a th:href="${submission.fileUrl}" target="_blank">📄 파일 다운로드</a></p>
+
+        <!-- 채점 결과 -->
+        <div th:if="${submission.grade != null}">
+            <div class="grade-display">
+                🎯 점수: <span th:text="${submission.grade}">점수</span>점 / 100점
+            </div>
+
+            <div th:if="${submission.feedback}" class="feedback-box">
+                <h4>📝 교수님 피드백</h4>
+                <p th:text="${submission.feedback}">피드백 내용</p>
+            </div>
+        </div>
+
+        <!-- 미채점 상태 -->
+        <div th:unless="${submission.grade != null}" style="text-align: center; margin: 20px 0;">
+            <div style="color: #ffc107; font-size: 18px; font-weight: bold;">
+                ⏳ 채점 대기중입니다
+            </div>
+            <p>교수님의 채점을 기다려주세요.</p>
+        </div>
+
+        <!-- 재제출 링크 -->
+        <div style="text-align: center; margin-top: 20px;">
+            <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}" class="submit-btn">
+                📤 과제 재제출하기
+            </a>
+        </div>
+    </div>
+
+    <!-- 제출물이 없는 경우 -->
+    <div th:unless="${submission}" class="no-submission">
+        <h3>⚠️ 아직 제출하지 않은 과제입니다</h3>
+        <p>마감일까지 과제를 제출해주세요.</p>
+        <div style="text-align: center; margin-top: 15px;">
+            <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}" class="submit-btn">
+                📤 과제 제출하기
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>교수 대시보드 - 과제 제출 시스템</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .course-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        nav a { margin-right: 20px; text-decoration: none; color: #333; }
+        nav a:hover { color: #4CAF50; }
+    </style>
+</head>
+<body>
+<h1>교수자 대시보드</h1>
+<nav>
+    <a href="/professor/course/new">새 과목 만들기</a>
+    <a href="/logout">로그아웃</a>
+</nav>
+
+<h2>내 과목 목록</h2>
+<div th:each="course : ${courses}" class="course-card">
+    <h3 th:text="${course.name}">과목명</h3>
+    <p>과목 코드: <span th:text="${course.code}">CODE123</span></p>
+    <a th:href="@{/professor/course/{id}(id=${course.courseId})}">과제 관리</a>
+    <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}">새 과제 등록</a>
+</div>
+
+<div th:if="${#lists.isEmpty(courses)}">
+    <p>아직 개설한 과목이 없습니다. <a href="/professor/course/new">새 과목을 만들어보세요!</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채점하기</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; }
+        .form-container { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .student-info { background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        .cancel-btn { background-color: #6c757d; margin-left: 10px; }
+        .cancel-btn:hover { background-color: #545b62; }
+    </style>
+</head>
+<body>
+<h1>과제 채점</h1>
+
+<div class="student-info">
+    <h3>제출 정보</h3>
+    <p><strong>과제:</strong> <span th:text="${submission.assignment.title}">과제명</span></p>
+    <p><strong>학생:</strong> <span th:text="${submission.student.name}">학생명</span></p>
+    <p><strong>제출일:</strong> <span th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일</span></p>
+    <p><strong>제출 파일:</strong> <a th:href="${submission.fileUrl}" target="_blank">📄 파일 보기</a></p>
+    <p th:if="${submission.grade != null}"><strong>현재 점수:</strong> <span th:text="${submission.grade}">점수</span>점</p>
+</div>
+
+<div class="form-container">
+    <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post">
+        <label for="grade"><strong>점수 (0-100):</strong></label>
+        <input type="number" id="grade" name="grade" min="0" max="100" step="0.01"
+               th:value="${submission.grade}" placeholder="점수를 입력하세요 (예: 85.5)" required>
+
+        <label for="feedback"><strong>피드백:</strong></label>
+        <textarea id="feedback" name="feedback" rows="6" placeholder="학생에게 전달할 피드백을 작성하세요..."
+                  th:text="${submission.feedback}"></textarea>
+
+        <div>
+            <button type="submit">채점 저장</button>
+            <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"
+               class="cancel-btn" style="text-decoration: none; color: white; padding: 12px 24px; border-radius: 4px; display: inline-block;">취소</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

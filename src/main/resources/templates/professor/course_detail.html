@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${course.name} + ' - 과제 관리'">과목 상세</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .assignment-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; background-color: #f9f9f9; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
+        .nav-links a:hover { text-decoration: underline; }
+        .deadline { color: #e74c3c; font-weight: bold; }
+        .actions a { margin-right: 10px; padding: 5px 10px; background-color: #3498db; color: white; text-decoration: none; border-radius: 3px; }
+        .actions a:hover { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="/professor/dashboard">← 대시보드로</a>
+        <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}">+ 새 과제 등록</a>
+    </div>
+
+    <h1 th:text="${course.name}">과목명</h1>
+    <p>과목 코드: <strong th:text="${course.code}">과목코드</strong></p>
+
+    <h2>과제 목록</h2>
+
+    <div th:if="${#lists.isEmpty(assignments)}">
+        <p>아직 등록된 과제가 없습니다.</p>
+        <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="btn">첫 과제를 등록해보세요!</a>
+    </div>
+
+    <div th:each="assignment : ${assignments}" class="assignment-card">
+        <h3 th:text="${assignment.title}">과제 제목</h3>
+        <p th:text="${assignment.description}">과제 설명</p>
+        <p class="deadline">📅 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}">2024-12-31 23:59</span></p>
+        <p th:if="${assignment.attachmentUrl}">
+            📎 첨부파일: <a th:href="${assignment.attachmentUrl}" target="_blank">다운로드</a>
+        </p>
+
+        <div class="actions">
+            <a th:href="@{/professor/assignment/{id}/submissions(id=${assignment.assignmentId})}">📋 제출물 확인</a>
+            <small>등록일: <span th:text="${#temporals.format(assignment.createdAt, 'yyyy-MM-dd')}">2024-12-01</span></small>
+        </div>
+    </div>
+</body>
+</html>
