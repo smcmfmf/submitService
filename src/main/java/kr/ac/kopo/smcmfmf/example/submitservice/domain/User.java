@@ -3,34 +3,31 @@ package kr.ac.kopo.smcmfmf.example.submitservice.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-public class User {
+public class User implements Serializable {   // 추가
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long id;
 
-    @Column(nullable = false, length = 100)
     private String name;
-
-    @Column(nullable = false, unique = true, length = 100)
     private String email;
-
-    @Column(nullable = false, length = 255)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
     private Role role;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
     public enum Role {
-        STUDENT, PROFESSOR, ADMIN
+        STUDENT, PROFESSOR
     }
 }

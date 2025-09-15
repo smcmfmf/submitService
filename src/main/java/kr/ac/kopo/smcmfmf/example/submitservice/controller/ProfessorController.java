@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -86,17 +87,17 @@ public class ProfessorController {
     // 점수 및 피드백 입력 폼
     @GetMapping("/submission/{submissionId}/grade")
     public String gradeForm(@PathVariable Long submissionId, Model model) {
-        // SubmissionService에 findById 메소드 추가 필요
-        model.addAttribute("submissionId", submissionId);
+        Submission submission = submissionService.getSubmissionById(submissionId);
+        model.addAttribute("submission", submission);
         return "professor/grade_form";
     }
 
     // 점수 및 피드백 저장
     @PostMapping("/submission/{submissionId}/grade")
     public String gradeSubmission(@PathVariable Long submissionId,
-                                  @RequestParam Double grade,
+                                  @RequestParam BigDecimal grade,
                                   @RequestParam String feedback) {
-        // SubmissionService에서 submissionId로 조회 후 채점
-        return "redirect:/professor/dashboard";
+        Submission submission = submissionService.updateGradeAndFeedback(submissionId, grade, feedback);
+        return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/student")
@@ -73,9 +74,10 @@ public class StudentController {
                              @SessionAttribute("user") User student,
                              Model model) {
         Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        // 이미 제출한 과제가 있는지 확인
-        // SubmissionService에 findByAssignmentAndStudent 메소드 활용
+        Optional<Submission> existingSubmission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
+
         model.addAttribute("assignment", assignment);
+        existingSubmission.ifPresent(submission -> model.addAttribute("existingSubmission", submission));
         return "student/submit_form";
     }
 
@@ -94,7 +96,8 @@ public class StudentController {
     // 내 제출물 및 점수 확인
     @GetMapping("/submissions")
     public String viewMySubmissions(@SessionAttribute("user") User student, Model model) {
-        // SubmissionService에 학생별 제출물 조회 메소드 추가 필요
+        List<Submission> submissions = submissionService.getSubmissionsByStudent(student);
+        model.addAttribute("submissions", submissions);
         return "student/my_submissions";
     }
 
@@ -104,7 +107,10 @@ public class StudentController {
                                    @SessionAttribute("user") User student,
                                    Model model) {
         Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        // SubmissionRepository의 findByAssignmentAndStudent 활용
+        Optional<Submission> submission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
+
+        model.addAttribute("assignment", assignment);
+        submission.ifPresent(s -> model.addAttribute("submission", s));
         return "student/submission_detail";
     }
 }
