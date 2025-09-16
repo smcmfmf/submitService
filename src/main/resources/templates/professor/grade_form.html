@@ -2,46 +2,282 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>채점하기</title>
+    <title>채점하기 - 과제 제출 시스템</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; }
-        .form-container { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .student-info { background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
-        button { background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-        .cancel-btn { background-color: #6c757d; margin-left: 10px; }
-        .cancel-btn:hover { background-color: #545b62; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header-nav {
+            float: right;
+            margin-top: 5px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .submission-info {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #2196F3;
+        }
+        .submission-info h3 {
+            margin: 0 0 20px 0;
+            color: #1976D2;
+            font-size: 1.4em;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #666;
+            font-size: 1em;
+        }
+        .file-link {
+            background-color: #e3f2fd;
+            color: #1976D2;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .file-link:hover {
+            background-color: #bbdefb;
+        }
+        .current-grade {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .grade-form {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .grade-form h3 {
+            margin: 0 0 25px 0;
+            color: #333;
+            font-size: 1.4em;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 18px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .submit-btn {
+            flex: 1;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .cancel-btn {
+            flex: 1;
+            padding: 14px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cancel-btn:hover {
+            background-color: #545b62;
+            transform: translateY(-1px);
+        }
+        .help-text {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #17a2b8;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
     </style>
 </head>
 <body>
-<h1>과제 채점</h1>
-
-<div class="student-info">
-    <h3>제출 정보</h3>
-    <p><strong>과제:</strong> <span th:text="${submission.assignment.title}">과제명</span></p>
-    <p><strong>학생:</strong> <span th:text="${submission.student.name}">학생명</span></p>
-    <p><strong>제출일:</strong> <span th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일</span></p>
-    <p><strong>제출 파일:</strong> <a th:href="${submission.fileUrl}" target="_blank">📄 파일 보기</a></p>
-    <p th:if="${submission.grade != null}"><strong>현재 점수:</strong> <span th:text="${submission.grade}">점수</span>점</p>
+<div class="header clearfix">
+    <h1>📝 과제 채점</h1>
+    <div class="header-nav">
+        <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}">🔙 제출물 목록</a>
+        <a href="/professor/dashboard">🏠 대시보드</a>
+    </div>
 </div>
 
-<div class="form-container">
-    <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post">
-        <label for="grade"><strong>점수 (0-100):</strong></label>
-        <input type="number" id="grade" name="grade" min="0" max="100" step="0.01"
-               th:value="${submission.grade}" placeholder="점수를 입력하세요 (예: 85.5)" required>
-
-        <label for="feedback"><strong>피드백:</strong></label>
-        <textarea id="feedback" name="feedback" rows="6" placeholder="학생에게 전달할 피드백을 작성하세요..."
-                  th:text="${submission.feedback}"></textarea>
-
-        <div>
-            <button type="submit">채점 저장</button>
-            <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"
-               class="cancel-btn" style="text-decoration: none; color: white; padding: 12px 24px; border-radius: 4px; display: inline-block;">취소</a>
+<div class="container">
+    <div class="submission-info">
+        <h3>📋 제출 정보</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">📚 과제명</div>
+                <div class="info-value" th:text="${submission.assignment.title}">과제명</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">👤 학생명</div>
+                <div class="info-value" th:text="${submission.student.name}">학생명</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">📅 제출일시</div>
+                <div class="info-value" th:text="${#temporals.format(submission.submittedAt, 'yyyy년 MM월 dd일 HH:mm')}">제출일</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">📄 제출 파일</div>
+                <div class="info-value">
+                    <a th:href="${submission.fileUrl}" target="_blank" class="file-link">
+                        📁 파일 다운로드
+                    </a>
+                </div>
+            </div>
         </div>
-    </form>
+        <div th:if="${submission.grade != null}" class="current-grade">
+            🎯 현재 점수: <span th:text="${submission.grade}">점수</span>점 / 100점
+        </div>
+    </div>
+
+    <div class="grade-form">
+        <h3>📊 채점 및 피드백</h3>
+
+        <div class="help-text">
+            💡 <strong>채점 안내:</strong> 점수는 0점부터 100점까지 입력 가능하며, 소수점도 사용할 수 있습니다. 피드백은 학생의 학습에 도움이 되도록 구체적으로 작성해주세요.
+        </div>
+
+        <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post">
+            <div class="form-group">
+                <label for="grade">📊 점수 (0-100점) <span style="color: #e74c3c;">*</span></label>
+                <input type="number" id="grade" name="grade" min="0" max="100" step="0.01"
+                       th:value="${submission.grade}" placeholder="85.5" required>
+            </div>
+
+            <div class="form-group">
+                <label for="feedback">💬 피드백 (학생에게 전달될 메시지)</label>
+                <textarea id="feedback" name="feedback" placeholder="과제를 잘 수행했습니다. 다음에는 다음 부분을 개선해보세요:&#10;&#10;1. 코드 주석 추가&#10;2. 예외 처리 강화&#10;3. UI/UX 개선&#10;&#10;전체적으로 좋은 작품입니다!"
+                          th:text="${submission.feedback}"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="submit-btn">✅ 채점 저장</button>
+                <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"
+                   class="cancel-btn">❌ 취소</a>
+            </div>
+        </form>
+    </div>
 </div>
 </body>
 </html>

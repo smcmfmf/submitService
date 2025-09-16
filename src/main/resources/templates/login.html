@@ -6,108 +6,253 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 50px;
-            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .form-container {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 30px;
-            border: 1px solid #ccc;
+        .login-container {
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-container h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        input, button {
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+            max-width: 420px;
+            margin: 20px;
         }
-        button {
-            background-color: #4CAF50;
+        .logo-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-title {
+            color: #333;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+        .logo-subtitle {
+            color: #666;
+            font-size: 1em;
+            margin: 0;
+        }
+        .success-message {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #28a745;
+            text-align: center;
+            font-weight: 500;
+        }
+        .login-form {
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        .form-input::placeholder {
+            color: #999;
+        }
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             border: none;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
-        button:hover {
-            background-color: #45a049;
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        .error {
-            color: red;
-            margin: 10px 0;
+        .login-button:active {
+            transform: translateY(0);
+        }
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da 0%, #f1c2c7 100%);
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
             text-align: center;
+            font-weight: 500;
         }
-        .success {
-            color: green;
-            margin: 10px 0;
+        .signup-section {
             text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+        .signup-text {
+            color: #666;
+            margin-bottom: 15px;
         }
         .signup-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .signup-link a {
-            color: #4CAF50;
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 25px;
             text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
         }
-        .signup-link a:hover {
-            text-decoration: underline;
+        .signup-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
         }
         .test-accounts {
-            background-color: #f8f9fa;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 10px;
             border-left: 4px solid #007bff;
         }
         .test-accounts h4 {
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0;
             color: #007bff;
+            font-size: 1.1em;
+            font-weight: bold;
         }
-        .test-accounts p {
-            margin: 5px 0;
-            font-size: 12px;
+        .test-account-grid {
+            display: grid;
+            gap: 8px;
+        }
+        .test-account-item {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+        .test-account-item:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+        }
+        .test-account-role {
+            font-weight: bold;
+            color: #495057;
+        }
+        .test-account-credentials {
+            color: #6c757d;
+            font-family: 'Courier New', monospace;
+        }
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+        }
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 10px;
+                padding: 30px 25px;
+            }
+            .logo-icon {
+                font-size: 3em;
+            }
+            .logo-title {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
-<div class="form-container">
-    <h2>🎓 과제 제출 시스템</h2>
-
-    <!-- 회원가입 성공 메시지 -->
-    <div th:if="${param.signup}" class="success">
-        회원가입이 완료되었습니다! 로그인해주세요.
+<div class="login-container">
+    <div class="logo-section">
+        <div class="logo-icon">🎓</div>
+        <h1 class="logo-title">과제 제출 시스템</h1>
+        <p class="logo-subtitle">학습 관리의 새로운 경험</p>
     </div>
 
-    <form th:action="@{/login}" method="post">
-        <input type="email" name="email" placeholder="이메일 주소" required>
-        <input type="password" name="password" placeholder="비밀번호" required>
-        <button type="submit">로그인</button>
+    <!-- 회원가입 성공 메시지 -->
+    <div th:if="${param.signup}" class="success-message">
+        🎉 회원가입이 완료되었습니다! 로그인해주세요.
+    </div>
+
+    <form th:action="@{/login}" method="post" class="login-form">
+        <div class="form-group">
+            <input type="email" name="email" class="form-input" placeholder="📧 이메일 주소를 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <input type="password" name="password" class="form-input" placeholder="🔒 비밀번호를 입력하세요" required>
+        </div>
+
+        <button type="submit" class="login-button">
+            🚀 로그인하기
+        </button>
     </form>
 
     <!-- 에러 메시지 -->
-    <div th:if="${error}" th:text="${error}" class="error"></div>
+    <div th:if="${error}" th:text="${error}" class="error-message"></div>
 
-    <div class="signup-link">
-        <a href="/signup">🆕 새 계정 만들기</a>
+    <div class="signup-section">
+        <p class="signup-text">아직 계정이 없으신가요?</p>
+        <a href="/signup" class="signup-link">
+            ✨ 새 계정 만들기
+        </a>
     </div>
 
     <!-- 테스트 계정 정보 -->
     <div class="test-accounts">
-        <h4>📝 테스트 계정</h4>
-        <p><strong>교수:</strong> prof@kopo.ac.kr / password123</p>
-        <p><strong>학생:</strong> student1@kopo.ac.kr / password123</p>
-        <p><strong>학생:</strong> student2@kopo.ac.kr / password123</p>
-        <p><strong>학생:</strong> student3@kopo.ac.kr / password123</p>
+        <h4>🧪 테스트 계정 정보</h4>
+        <div class="test-account-grid">
+            <div class="test-account-item">
+                <div class="test-account-role">👨‍🏫 교수 계정:</div>
+                <div class="test-account-credentials">prof@kopo.ac.kr / password123</div>
+            </div>
+            <div class="test-account-item">
+                <div class="test-account-role">👨‍🎓 학생 계정 1:</div>
+                <div class="test-account-credentials">student1@kopo.ac.kr / password123</div>
+            </div>
+            <div class="test-account-item">
+                <div class="test-account-role">👨‍🎓 학생 계정 2:</div>
+                <div class="test-account-credentials">student2@kopo.ac.kr / password123</div>
+            </div>
+            <div class="test-account-item">
+                <div class="test-account-role">👨‍🎓 학생 계정 3:</div>
+                <div class="test-account-credentials">student3@kopo.ac.kr / password123</div>
+            </div>
+        </div>
     </div>
 </div>
 </body>

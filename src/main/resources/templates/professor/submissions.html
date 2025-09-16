@@ -4,69 +4,284 @@
     <meta charset="UTF-8">
     <title th:text="${assignment.title} + ' - 제출물 목록'">제출물 목록</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .submission-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .graded { background-color: #e8f5e8; }
-        .ungraded { background-color: #fff3cd; }
-        .nav-links a { margin-right: 20px; text-decoration: none; color: #4CAF50; }
-        .grade-btn { background-color: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px; }
-        .grade-btn:hover { background-color: #218838; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header-nav {
+            float: right;
+            margin-top: 5px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .assignment-info {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .assignment-info h2 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.8em;
+        }
+        .assignment-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .deadline-info {
+            background-color: #fdf2f2;
+            color: #e74c3c;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .submissions-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        .section-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+        .submission-count {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .submissions-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .submissions-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        .submissions-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .submission-row.graded {
+            background-color: #e8f5e8;
+        }
+        .submission-row.ungraded {
+            background-color: #fff3cd;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+        }
+        .status-graded {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-ungraded {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .grade-display {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+            background-color: #e3f2fd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .file-link:hover {
+            background-color: #bbdefb;
+        }
+        .grade-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .grade-btn:hover {
+            background-color: #218838;
+        }
+        .grade-btn.modify {
+            background-color: #17a2b8;
+        }
+        .grade-btn.modify:hover {
+            background-color: #138496;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .empty-state p {
+            margin-bottom: 25px;
+            color: #999;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        @media (max-width: 768px) {
+            .submissions-table {
+                font-size: 0.9em;
+            }
+            .submissions-table th,
+            .submissions-table td {
+                padding: 10px 8px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="nav-links">
-        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}">← 과제 목록으로</a>
-        <a href="/professor/dashboard">대시보드로</a>
+<div class="header clearfix">
+    <h1>📋 제출물 관리</h1>
+    <div class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}">🔙 과제 목록</a>
+        <a href="/professor/dashboard">🏠 대시보드</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="assignment-info">
+        <h2 th:text="${assignment.title}">과제명</h2>
+        <div class="assignment-description" th:text="${assignment.description}">과제 설명</div>
+        <div class="deadline-info">
+            📅 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy년 MM월 dd일 HH:mm')}">마감일</span>
+        </div>
     </div>
 
-    <h1 th:text="${assignment.title}">과제명</h1>
-    <p th:text="${assignment.description}">과제 설명</p>
-    <p>📅 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span></p>
+    <div class="submissions-section">
+        <div class="section-header">
+            <h2>📝 제출물 목록</h2>
+            <div class="submission-count">
+                <span th:text="${#lists.size(submissions)}">0</span>건 제출
+            </div>
+        </div>
 
-    <h2>제출물 목록 (<span th:text="${#lists.size(submissions)}">0</span>건)</h2>
+        <div th:if="${#lists.isEmpty(submissions)}" class="empty-state">
+            <h3>아직 제출된 과제가 없습니다</h3>
+            <p>학생들의 과제 제출을 기다리고 있습니다.</p>
+            <div style="font-size: 3em; margin: 20px 0; color: #ddd;">📭</div>
+        </div>
 
-    <div th:if="${#lists.isEmpty(submissions)}">
-        <p>아직 제출된 과제가 없습니다.</p>
-    </div>
-
-    <table th:unless="${#lists.isEmpty(submissions)}">
-        <thead>
+        <table class="submissions-table" th:unless="${#lists.isEmpty(submissions)}">
+            <thead>
             <tr>
-                <th>학생명</th>
-                <th>제출일시</th>
-                <th>파일</th>
-                <th>점수</th>
-                <th>상태</th>
-                <th>액션</th>
+                <th>👤 학생명</th>
+                <th>📅 제출일시</th>
+                <th>📄 파일</th>
+                <th>📊 점수</th>
+                <th>🏷️ 상태</th>
+                <th>⚡ 액션</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             <tr th:each="submission : ${submissions}"
-                th:class="${submission.grade != null} ? 'graded' : 'ungraded'">
-                <td th:text="${submission.student.name}">학생명</td>
+                th:class="'submission-row ' + (${submission.grade != null} ? 'graded' : 'ungraded')">
+                <td>
+                    <strong th:text="${submission.student.name}">학생명</strong>
+                </td>
                 <td th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}">제출일시</td>
                 <td>
-                    <a th:href="${submission.fileUrl}" target="_blank">📄 파일 다운로드</a>
+                    <a th:href="${submission.fileUrl}" target="_blank" class="file-link">
+                        📄 파일 다운로드
+                    </a>
                 </td>
                 <td>
-                    <span th:if="${submission.grade != null}" th:text="${submission.grade} + '점'">점수</span>
-                    <span th:unless="${submission.grade != null}" style="color: #999;">미채점</span>
+                            <span th:if="${submission.grade != null}"
+                                  th:text="${submission.grade} + '점'"
+                                  class="grade-display">점수</span>
+                    <span th:unless="${submission.grade != null}"
+                          style="color: #999; font-style: italic;">미채점</span>
                 </td>
                 <td>
-                    <span th:if="${submission.grade != null}" style="color: #28a745; font-weight: bold;">채점 완료</span>
-                    <span th:unless="${submission.grade != null}" style="color: #ffc107; font-weight: bold;">채점 대기</span>
+                            <span th:if="${submission.grade != null}"
+                                  class="status-badge status-graded">✅ 채점 완료</span>
+                    <span th:unless="${submission.grade != null}"
+                          class="status-badge status-ungraded">⏳ 채점 대기</span>
                 </td>
                 <td>
-                    <a th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" class="grade-btn">
-                        <span th:if="${submission.grade != null}">점수 수정</span>
-                        <span th:unless="${submission.grade != null}">채점하기</span>
+                    <a th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"
+                       th:class="'grade-btn ' + (${submission.grade != null} ? 'modify' : '')">
+                        <span th:if="${submission.grade != null}">✏️ 점수 수정</span>
+                        <span th:unless="${submission.grade != null}">📝 채점하기</span>
                     </a>
                 </td>
             </tr>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>

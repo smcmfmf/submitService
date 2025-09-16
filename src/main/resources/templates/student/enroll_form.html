@@ -2,16 +2,157 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>수강신청</title>
+    <title>수강신청 - 과제 제출 시스템</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .form-container h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .cancel-link:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+        .back-btn a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #e74c3c;
+            margin: 15px 0;
+            text-align: center;
+            padding: 10px;
+            background-color: #fdf2f2;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+        }
+        .form-help {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 25px;
+        }
+        .form-help h4 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .form-help p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .required {
+            color: #e74c3c;
+        }
+        small {
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
-<h1>수강신청</h1>
-<form th:action="@{/student/enroll}" method="post">
-    <label>과목코드:</label>
-    <input type="text" name="courseCode" placeholder="교수가 제공한 과목코드 입력" required>
-    <button type="submit">수강신청</button>
-</form>
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
-<a href="/student/dashboard">대시보드로</a>
+<div class="back-btn">
+    <a href="/student/dashboard">← 대시보드로 돌아가기</a>
+</div>
+
+<div class="form-container">
+    <h2>📚 수강신청</h2>
+
+    <div class="form-help">
+        <h4>💡 수강신청 안내</h4>
+        <p>• 교수님이 제공한 과목 코드를 정확히 입력해주세요.</p>
+        <p>• 과목 코드는 대소문자를 구분합니다.</p>
+        <p>• 수강신청 후 바로 과제 확인이 가능합니다.</p>
+    </div>
+
+    <form th:action="@{/student/enroll}" method="post">
+        <div class="form-group">
+            <label for="courseCode">과목 코드 <span class="required">*</span></label>
+            <input type="text" id="courseCode" name="courseCode"
+                   placeholder="예: CS101" required>
+            <small>교수님이 제공한 과목 코드를 입력하세요.</small>
+        </div>
+
+        <button type="submit">✅ 수강신청 하기</button>
+    </form>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${error}" th:text="${error}" class="error"></div>
+
+    <a href="/student/dashboard" class="cancel-link">취소</a>
+</div>
 </body>
 </html>

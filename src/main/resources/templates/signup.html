@@ -4,27 +4,273 @@
     <meta charset="UTF-8">
     <title>회원가입 - 과제 제출 시스템</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 50px; }
-        .form-container { max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .signup-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            margin: 20px;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-title {
+            color: #333;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+        .logo-subtitle {
+            color: #666;
+            font-size: 1em;
+            margin: 0 0 5px 0;
+        }
+        .signup-description {
+            color: #007bff;
+            font-size: 0.95em;
+            font-weight: 500;
+            margin: 0;
+        }
+        .signup-form {
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        .form-input::placeholder {
+            color: #999;
+        }
+        .form-select {
+            cursor: pointer;
+            color: #333;
+        }
+        .form-select option {
+            padding: 10px;
+        }
+        .form-select option:first-child {
+            color: #999;
+        }
+        .signup-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .signup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        .signup-button:active {
+            transform: translateY(0);
+        }
+        .login-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+        .login-text {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .login-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        .login-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+        .role-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #17a2b8;
+        }
+        .role-info h4 {
+            margin: 0 0 15px 0;
+            color: #17a2b8;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .role-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .role-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+        .role-item:hover {
+            background-color: #f8f9fa;
+            border-color: #17a2b8;
+            transform: translateY(-1px);
+        }
+        .role-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+        .role-description {
+            color: #6c757d;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        .required {
+            color: #e74c3c;
+        }
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+            pointer-events: none;
+        }
+        .password-strength {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        @media (max-width: 480px) {
+            .signup-container {
+                margin: 10px;
+                padding: 30px 25px;
+            }
+            .logo-icon {
+                font-size: 3em;
+            }
+            .logo-title {
+                font-size: 1.5em;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="form-container">
-    <h2>회원가입</h2>
-    <form th:action="@{/signup}" method="post" th:object="${user}">
-        <input type="text" th:field="*{name}" placeholder="이름" required>
-        <input type="email" th:field="*{email}" placeholder="이메일" required>
-        <input type="password" th:field="*{password}" placeholder="비밀번호" required>
-        <select th:field="*{role}">
-            <option value="">역할 선택</option>
-            <option value="STUDENT">학생</option>
-            <option value="PROFESSOR">교수</option>
-        </select>
-        <button type="submit">가입하기</button>
+<div class="signup-container">
+    <div class="logo-section">
+        <div class="logo-icon">🎓</div>
+        <h1 class="logo-title">회원가입</h1>
+        <p class="logo-subtitle">과제 제출 시스템</p>
+        <p class="signup-description">새로운 계정을 만들어 시작하세요</p>
+    </div>
+
+    <form th:action="@{/signup}" method="post" th:object="${user}" class="signup-form">
+        <div class="form-group">
+            <label for="name" class="form-label">👤 이름 <span class="required">*</span></label>
+            <input type="text" id="name" th:field="*{name}" class="form-input" placeholder="실명을 입력해주세요" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">📧 이메일 <span class="required">*</span></label>
+            <input type="email" id="email" th:field="*{email}" class="form-input" placeholder="example@kopo.ac.kr" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">🔒 비밀번호 <span class="required">*</span></label>
+            <input type="password" id="password" th:field="*{password}" class="form-input" placeholder="안전한 비밀번호를 입력하세요" required>
+            <div class="password-strength">💡 8자 이상, 영문/숫자 조합을 권장합니다</div>
+        </div>
+
+        <div class="form-group">
+            <label for="role" class="form-label">👥 역할 선택 <span class="required">*</span></label>
+            <select id="role" th:field="*{role}" class="form-select" required>
+                <option value="">역할을 선택해주세요</option>
+                <option value="STUDENT">🎓 학생</option>
+                <option value="PROFESSOR">👨‍🏫 교수</option>
+            </select>
+        </div>
+
+        <button type="submit" class="signup-button">
+            🚀 계정 만들기
+        </button>
     </form>
-    <a href="/">로그인으로 돌아가기</a>
+
+    <div class="login-section">
+        <p class="login-text">이미 계정이 있으신가요?</p>
+        <a href="/" class="login-link">
+            🔑 로그인하러 가기
+        </a>
+    </div>
+
+    <!-- 역할 설명 -->
+    <div class="role-info">
+        <h4>💁 역할별 안내</h4>
+        <div class="role-grid">
+            <div class="role-item">
+                <div class="role-title">👨‍🏫 교수 계정</div>
+                <div class="role-description">과목을 개설하고, 과제를 등록하며, 학생들의 제출물을 채점할 수 있습니다.</div>
+            </div>
+            <div class="role-item">
+                <div class="role-title">🎓 학생 계정</div>
+                <div class="role-description">과목을 수강신청하고, 과제를 제출하며, 채점 결과와 피드백을 확인할 수 있습니다.</div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>
