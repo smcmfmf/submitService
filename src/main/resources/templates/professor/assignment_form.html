@@ -2,21 +2,51 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>새 과제 등록 - 과제 제출 시스템</title>
+    <title>과제 생성 - 과제 제출 시스템</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 50px;
+            margin: 0;
+            padding: 0;
             background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header-nav {
+            float: right;
+            margin-top: 5px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
         .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px;
-            border: 1px solid #ccc;
             background-color: white;
-            border-radius: 10px;
+            border-radius: 12px;
+            padding: 40px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
         .form-container h2 {
             text-align: center;
@@ -25,146 +55,186 @@
             font-size: 1.8em;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #333;
             font-weight: bold;
+            font-size: 1.1em;
         }
-        input, textarea {
+        .required {
+            color: #e74c3c;
+        }
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea,
+        input[type="file"] {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             border: 2px solid #ddd;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
-            font-family: Arial, sans-serif;
             transition: border-color 0.3s;
         }
-        input:focus, textarea:focus {
-            outline: none;
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus {
             border-color: #4CAF50;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            outline: none;
         }
         textarea {
             resize: vertical;
             min-height: 120px;
         }
-        button {
-            width: 100%;
-            padding: 14px;
-            background-color: #4CAF50;
-            color: white;
+        input[type="file"] {
+            border-style: dashed;
+            background-color: #fafafa;
+            padding: 20px;
+        }
+        input[type="file"]:hover {
+            border-color: #4CAF50;
+            background-color: #f0f8f0;
+        }
+        .file-help {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #2196F3;
+        }
+        .file-help h4 {
+            margin: 0 0 10px 0;
+            color: #1976D2;
+            font-size: 1em;
+        }
+        .file-help ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .file-help li {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .btn {
+            padding: 14px 28px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            margin-top: 10px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
             transition: background-color 0.3s, transform 0.1s;
         }
-        button:hover {
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
             background-color: #45a049;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
-        .cancel-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            text-decoration: none;
-            padding: 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
         }
-        .cancel-link:hover {
-            background-color: #f0f0f0;
-            color: #333;
+        .btn-secondary:hover {
+            background-color: #5a6268;
         }
-        .back-btn {
-            margin-bottom: 20px;
-        }
-        .back-btn a {
-            color: #4CAF50;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .back-btn a:hover {
-            text-decoration: underline;
-        }
-        .form-help {
-            background-color: #f8f9fa;
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
             padding: 15px;
             border-radius: 6px;
-            border-left: 4px solid #007bff;
+            border: 1px solid #f5c6cb;
             margin-bottom: 25px;
         }
-        .form-help h4 {
-            margin: 0 0 10px 0;
-            color: #007bff;
-        }
-        .form-help p {
-            margin: 5px 0;
+        .form-help-text {
             font-size: 14px;
             color: #666;
+            margin-top: 5px;
         }
-        .required {
-            color: #e74c3c;
-        }
-        small {
-            color: #666;
-            font-size: 12px;
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
         }
     </style>
 </head>
 <body>
-<div class="back-btn">
-    <a th:href="@{/professor/course/{courseId}(courseId=${courseId})}">← 과제 목록으로 돌아가기</a>
+<div class="header clearfix">
+    <h1>📝 과제 생성</h1>
+    <div class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${courseId})}">🔙 과제 목록</a>
+        <a href="/professor/dashboard">🏠 대시보드</a>
+    </div>
 </div>
 
-<div class="form-container">
-    <h2>📝 새 과제 등록</h2>
+<div class="container">
+    <div class="form-container">
+        <h2>새 과제 만들기</h2>
 
-    <div class="form-help">
-        <h4>💡 과제 등록 안내</h4>
-        <p>• 과제 제목과 설명을 명확하게 작성해주세요.</p>
-        <p>• 마감일을 정확히 설정하면 학생들이 일정을 관리할 수 있습니다.</p>
-        <p>• 첨부파일 URL은 선택사항입니다.</p>
+        <!-- 에러 메시지 표시 -->
+        <div th:if="${error}" class="error-message">
+            <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
+        </div>
+
+        <form th:action="@{/professor/course/{courseId}/assignment/new(courseId=${courseId})}"
+              th:object="${assignment}" method="post" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label for="title">📋 과제 제목 <span class="required">*</span></label>
+                <input type="text" id="title" th:field="*{title}" required
+                       placeholder="과제 제목을 입력하세요">
+                <div class="form-help-text">학생들이 쉽게 이해할 수 있는 명확한 제목을 작성해주세요.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">📄 과제 설명 <span class="required">*</span></label>
+                <textarea id="description" th:field="*{description}" required
+                          placeholder="과제에 대한 자세한 설명을 입력하세요..."></textarea>
+                <div class="form-help-text">과제의 목표, 요구사항, 제출 형식 등을 자세히 설명해주세요.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="deadline">📅 마감일 <span class="required">*</span></label>
+                <input type="datetime-local" id="deadline" th:field="*{deadline}" required>
+                <div class="form-help-text">학생들이 충분한 시간을 가질 수 있도록 적절한 마감일을 설정해주세요.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="attachmentFile">📎 첨부파일 (선택사항)</label>
+                <input type="file" id="attachmentFile" name="attachmentFile"
+                       accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip,.rar">
+
+                <div class="file-help">
+                    <h4>📋 첨부파일 안내</h4>
+                    <ul>
+                        <li>과제 수행에 필요한 자료, 템플릿, 참고문서 등을 첨부할 수 있습니다</li>
+                        <li>지원 형식: PDF, Word, PowerPoint, 텍스트, 압축파일</li>
+                        <li>최대 파일 크기: 10MB</li>
+                        <li>첨부파일은 학생들이 다운로드할 수 있습니다</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">✅ 과제 생성하기</button>
+                <a th:href="@{/professor/course/{id}(id=${courseId})}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
     </div>
-
-    <form th:action="@{/professor/course/{courseId}/assignment/new(courseId=${courseId})}"
-          method="post" th:object="${assignment}">
-
-        <div class="form-group">
-            <label for="title">과제 제목 <span class="required">*</span></label>
-            <input type="text" id="title" th:field="*{title}" placeholder="예: 웹사이트 제작 프로젝트" required>
-        </div>
-
-        <div class="form-group">
-            <label for="description">과제 설명</label>
-            <textarea id="description" th:field="*{description}" rows="6"
-                      placeholder="과제의 세부 요구사항, 제출 방법, 평가 기준 등을 작성해주세요."></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="deadline">마감일 <span class="required">*</span></label>
-            <input type="datetime-local" id="deadline" th:field="*{deadline}" required>
-            <small>학생들이 과제를 제출할 수 있는 마지막 시간을 설정해주세요.</small>
-        </div>
-
-        <div class="form-group">
-            <label for="attachmentUrl">첨부파일 URL (선택사항)</label>
-            <input type="url" id="attachmentUrl" th:field="*{attachmentUrl}"
-                   placeholder="https://drive.google.com/file/d/...">
-            <small>과제 관련 자료나 템플릿 파일의 링크를 입력해주세요.</small>
-        </div>
-
-        <button type="submit">✅ 과제 등록하기</button>
-    </form>
-
-    <a th:href="@{/professor/course/{courseId}(courseId=${courseId})}" class="cancel-link">취소</a>
 </div>
 </body>
 </html>

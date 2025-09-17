@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${course.name} + ' - 과제 관리'">과목 상세</title>
+    <title th:text="${course.name} + ' - 과제 관리'">과제 관리</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,34 +48,14 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        .course-info h1 {
-            margin: 0 0 10px 0;
+        .course-info h2 {
+            margin: 0 0 15px 0;
             color: #333;
             font-size: 1.8em;
         }
-        .course-code {
+        .course-meta {
             color: #666;
             font-size: 1.1em;
-            margin-bottom: 20px;
-        }
-        .action-buttons {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            margin: 0 10px;
-            display: inline-block;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        .btn:hover {
-            background-color: #45a049;
-            transform: translateY(-1px);
         }
         .assignments-section {
             background-color: white;
@@ -83,87 +63,96 @@
             padding: 30px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .assignments-section h2 {
-            margin: 0 0 25px 0;
-            color: #333;
-            font-size: 1.5em;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 10px;
-        }
-        .assignment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
-        }
-        .assignment-card {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 25px;
-            background-color: #fafafa;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .assignment-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-        .assignment-card h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 1.3em;
-        }
-        .assignment-description {
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        .assignment-meta {
-            margin-bottom: 20px;
-        }
-        .deadline {
-            color: #e74c3c;
-            font-weight: bold;
-            background-color: #fdf2f2;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-        .attachment {
-            margin: 10px 0;
-        }
-        .attachment a {
-            color: #007bff;
-            text-decoration: none;
-            background-color: #e3f2fd;
-            padding: 6px 12px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .attachment a:hover {
-            background-color: #bbdefb;
-        }
-        .assignment-actions {
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4CAF50;
         }
-        .submission-btn {
-            background-color: #007bff;
+        .section-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+        .add-assignment-btn {
+            background-color: #2196F3;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
             transition: background-color 0.3s;
         }
-        .submission-btn:hover {
-            background-color: #0056b3;
+        .add-assignment-btn:hover {
+            background-color: #1976D2;
         }
-        .created-date {
+        .assignments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .assignments-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .assignments-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        .assignments-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .assignment-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .assignment-description {
+            color: #666;
             font-size: 0.9em;
-            color: #999;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .deadline-display {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .attachment-link {
+            color: #2196F3;
+            text-decoration: none;
+            background-color: #e3f2fd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .attachment-link:hover {
+            background-color: #bbdefb;
+        }
+        .view-submissions-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .view-submissions-btn:hover {
+            background-color: #218838;
         }
         .empty-state {
             text-align: center;
@@ -189,62 +178,72 @@
 <div class="header clearfix">
     <h1>📚 과제 관리</h1>
     <div class="header-nav">
-        <a href="/professor/dashboard">🏠 대시보드</a>
-        <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}">➕ 새 과제</a>
+        <a href="/professor/dashboard">🔙 대시보드</a>
+        <a href="/logout">로그아웃</a>
     </div>
 </div>
 
 <div class="container">
     <div class="course-info">
-        <h1 th:text="${course.name}">과목명</h1>
-        <div class="course-code">
-            📌 과목 코드: <strong th:text="${course.code}">과목코드</strong>
+        <h2 th:text="${course.name}">과목명</h2>
+        <div class="course-meta">
+            📝 과목 코드: <strong th:text="${course.code}">과목코드</strong>
         </div>
-    </div>
-
-    <div class="action-buttons">
-        <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="btn">
-            ➕ 새 과제 등록하기
-        </a>
     </div>
 
     <div class="assignments-section">
-        <h2>📋 과제 목록</h2>
-
-        <div th:if="${#lists.isEmpty(assignments)}" class="empty-state">
-            <h3>아직 등록된 과제가 없습니다</h3>
-            <p>학생들을 위한 첫 번째 과제를 등록해보세요!</p>
-            <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="btn">
-                📝 첫 과제 등록하기
+        <div class="section-header">
+            <h3>📋 과제 목록</h3>
+            <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="add-assignment-btn">
+                ➕ 새 과제 추가
             </a>
         </div>
 
-        <div class="assignment-grid" th:unless="${#lists.isEmpty(assignments)}">
-            <div th:each="assignment : ${assignments}" class="assignment-card">
-                <h3 th:text="${assignment.title}">과제 제목</h3>
-                <div class="assignment-description" th:text="${assignment.description}">과제 설명</div>
-
-                <div class="assignment-meta">
-                    <div class="deadline">
-                        📅 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy년 MM월 dd일 HH:mm')}">마감일</span>
-                    </div>
-
-                    <div th:if="${assignment.attachmentUrl}" class="attachment">
-                        📎 <a th:href="${assignment.attachmentUrl}" target="_blank">첨부파일 다운로드</a>
-                    </div>
-                </div>
-
-                <div class="assignment-actions">
-                    <a th:href="@{/professor/assignment/{id}/submissions(id=${assignment.assignmentId})}"
-                       class="submission-btn">
-                        📋 제출물 확인 및 채점
-                    </a>
-                    <div class="created-date">
-                        등록일: <span th:text="${#temporals.format(assignment.createdAt, 'yyyy-MM-dd')}">등록일</span>
-                    </div>
-                </div>
-            </div>
+        <div th:if="${#lists.isEmpty(assignments)}" class="empty-state">
+            <h3>아직 생성된 과제가 없습니다</h3>
+            <p>새 과제를 추가하여 학생들에게 과제를 내주세요.</p>
+            <div style="font-size: 3em; margin: 20px 0; color: #ddd;">📝</div>
+            <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="add-assignment-btn">
+                ➕ 첫 번째 과제 만들기
+            </a>
         </div>
+
+        <table class="assignments-table" th:unless="${#lists.isEmpty(assignments)}">
+            <thead>
+            <tr>
+                <th>📋 과제명</th>
+                <th>📅 마감일</th>
+                <th>📎 첨부파일</th>
+                <th>📊 제출물 확인</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="assignment : ${assignments}">
+                <td>
+                    <div class="assignment-title" th:text="${assignment.title}">과제 제목</div>
+                    <div class="assignment-description" th:text="${assignment.description}">과제 설명</div>
+                </td>
+                <td>
+                    <span class="deadline-display"
+                          th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span>
+                </td>
+                <td>
+                    <span th:if="${assignment.attachmentUrl}">
+                        <a th:href="${assignment.attachmentUrl}" class="attachment-link">
+                            📄 파일 다운로드
+                        </a>
+                    </span>
+                    <span th:unless="${assignment.attachmentUrl}" style="color: #999;">첨부파일 없음</span>
+                </td>
+                <td>
+                    <a th:href="@{/professor/assignment/{id}/submissions(id=${assignment.assignmentId})}"
+                       class="view-submissions-btn">
+                        📝 제출물 보기
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 </body>

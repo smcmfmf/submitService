@@ -6,8 +6,10 @@ import kr.ac.kopo.smcmfmf.example.submitservice.domain.Submission;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.User;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.AssignmentService;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.CourseService;
+import kr.ac.kopo.smcmfmf.example.submitservice.service.FileService;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.SubmissionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +21,12 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/student")
 @RequiredArgsConstructor
+@Slf4j
 public class StudentController {
     private final CourseService courseService;
     private final AssignmentService assignmentService;
     private final SubmissionService submissionService;
+    private final FileService fileService;
 
     @GetMapping("/dashboard")
     public String dashboard(@SessionAttribute("user") User user, Model model) {
@@ -85,12 +89,31 @@ public class StudentController {
     @PostMapping("/assignment/{assignmentId}/submit")
     public String submitAssignment(@PathVariable Long assignmentId,
                                    @SessionAttribute("user") User student,
-                                   @RequestParam("file") MultipartFile file) {
-        // 실제 환경에서는 파일 저장 로직 구현 필요 (S3, local storage 등)
-        String fileUrl = "/uploads/" + file.getOriginalFilename();
-        Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        submissionService.submitAssignment(assignment, student, fileUrl);
-        return "redirect:/student/course/" + assignment.getCourse().getCourseId();
+                                   @RequestParam("file") MultipartFile file,
+                                   Model model) {
+        try {
+            if (file.isEmpty()) {
+                model.addAttribute("error", "파일을 선택해주세요.");
+                Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+                model.addAttribute("assignment", assignment);
+                return "student/submit_form";
+            }
+
+            // 파일 실제 저장
+            String savedFileName = fileService.saveFile(file, student.getName());
+            String fileUrl = "/files/download/" + savedFileName;
+
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            submissionService.submitAssignment(assignment, student, fileUrl);
+
+            return "redirect:/student/course/" + assignment.getCourse().getCourseId();
+        } catch (Exception e) {
+            log.error("파일 업로드 중 오류 발생", e);
+            model.addAttribute("error", "파일 업로드 중 오류가 발생했습니다.");
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            model.addAttribute("assignment", assignment);
+            return "student/submit_form";
+        }
     }
 
     // 내 제출물 및 점수 확인

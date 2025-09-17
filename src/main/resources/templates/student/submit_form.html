@@ -168,6 +168,11 @@
         </p>
     </div>
 
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}" class="warning">
+        <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
+    </div>
+
     <!-- 기존 제출물이 있는 경우 경고 -->
     <div th:if="${existingSubmission}" class="existing-submission">
         <strong>⚠️ 재제출 안내</strong>
