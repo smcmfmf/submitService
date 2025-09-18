@@ -118,6 +118,7 @@ public class DataInitializationConfig implements ApplicationRunner {
                 .title("자바 기초 문법")
                 .description("변수, 조건문, 반복문을 활용한 간단한 프로그램을 작성하세요.")
                 .deadline(LocalDateTime.of(2024, 12, 25, 23, 59))
+                .attachmentUrl("/files/download/test.txt")
                 .build();
 
         Assignment assignment2 = Assignment.builder()
@@ -132,7 +133,7 @@ public class DataInitializationConfig implements ApplicationRunner {
                 .title("ER 다이어그램 작성")
                 .description("주어진 요구사항에 따라 ER 다이어그램을 작성하세요.")
                 .deadline(LocalDateTime.of(2024, 12, 28, 23, 59))
-                .attachmentUrl("/files/er_requirement.pdf")
+                .attachmentUrl("/files/download/test.txt")
                 .build();
 
         Assignment assignment4 = Assignment.builder()
@@ -167,7 +168,7 @@ public class DataInitializationConfig implements ApplicationRunner {
         Submission submission1 = Submission.builder()
                 .assignment(assignment1)
                 .student(student1)
-                .fileUrl("/uploads/hongstudent_java_basic.java")
+                .fileUrl("/files/download/studentTest.txt")
                 .submittedAt(LocalDateTime.of(2024, 12, 20, 15, 30))
                 .grade(new BigDecimal("85.50"))
                 .feedback("기본 문법은 잘 이해하셨네요. 코드 주석을 더 자세히 작성해주세요.")
@@ -176,7 +177,7 @@ public class DataInitializationConfig implements ApplicationRunner {
         Submission submission2 = Submission.builder()
                 .assignment(assignment1)
                 .student(student2)
-                .fileUrl("/uploads/parkstudent_java_basic.java")
+                .fileUrl("/files/download/studentTest.txt")
                 .submittedAt(LocalDateTime.of(2024, 12, 21, 10, 15))
                 .grade(new BigDecimal("92.00"))
                 .feedback("매우 잘 작성하셨습니다. 변수명이 명확해서 읽기 좋네요.")
@@ -185,14 +186,14 @@ public class DataInitializationConfig implements ApplicationRunner {
         Submission submission3 = Submission.builder()
                 .assignment(assignment3)
                 .student(student1)
-                .fileUrl("/uploads/hongstudent_er_diagram.pdf")
+                .fileUrl("/files/download/studentTest.txt")
                 .submittedAt(LocalDateTime.of(2024, 12, 22, 18, 45))
                 .build();
 
         Submission submission4 = Submission.builder()
                 .assignment(assignment3)
                 .student(student3)
-                .fileUrl("/uploads/choistudent_er_diagram.pdf")
+                .fileUrl("/files/download/studentTest.txt")
                 .submittedAt(LocalDateTime.of(2024, 12, 23, 14, 20))
                 .grade(new BigDecimal("78.00"))
                 .feedback("ER 다이어그램의 기본 구조는 좋습니다. 관계의 카디널리티 표현을 더 정확히 해주세요.")
@@ -201,14 +202,16 @@ public class DataInitializationConfig implements ApplicationRunner {
         Submission submission5 = Submission.builder()
                 .assignment(assignment5)
                 .student(student2)
-                .fileUrl("/uploads/parkstudent_portfolio.zip")
-                .submittedAt(LocalDateTime.of(2024, 12, 24, 9, 30))
+                .fileUrl("/files/download/studentTest.txt")
+                .submittedAt(LocalDateTime.of(2024, 12, 25, 16, 45))
+                .grade(new BigDecimal("88.50"))
+                .feedback("디자인이 깔끔하고 반응형도 잘 구현하셨네요. CSS 애니메이션을 추가하면 더 좋을 것 같습니다.")
                 .build();
 
         Submission submission6 = Submission.builder()
                 .assignment(assignment5)
                 .student(student3)
-                .fileUrl("/uploads/choistudent_portfolio.zip")
+                .fileUrl("/files/download/studentTest.txt")
                 .submittedAt(LocalDateTime.of(2024, 12, 25, 16, 45))
                 .grade(new BigDecimal("88.50"))
                 .feedback("디자인이 깔끔하고 반응형도 잘 구현하셨네요. CSS 애니메이션을 추가하면 더 좋을 것 같습니다.")

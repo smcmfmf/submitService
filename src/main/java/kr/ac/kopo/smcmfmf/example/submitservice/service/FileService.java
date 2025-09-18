@@ -21,7 +21,7 @@ public class FileService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    public String saveFile(MultipartFile file, String studentName) throws IOException {
+    public String saveFile(MultipartFile file, String prefix) throws IOException {
         // 업로드 디렉토리 생성
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -40,7 +40,7 @@ public class FileService {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String uniqueId = UUID.randomUUID().toString().substring(0, 8);
         String fileName = String.format("%s_%s_%s%s",
-                studentName.replaceAll("[^a-zA-Z0-9가-힣]", "_"),
+                prefix.replaceAll("[^a-zA-Z0-9가-힣_]", "_"),
                 timestamp,
                 uniqueId,
                 extension);
@@ -53,6 +53,17 @@ public class FileService {
         log.info("파일 저장 완료: {} -> {}", originalFilename, fileName);
 
         return fileName; // 저장된 파일명 반환
+    }
+
+    // 학생 제출물용 편의 메소드
+    public String saveStudentSubmission(MultipartFile file, String studentName) throws IOException {
+        return saveFile(file, studentName);
+    }
+
+    // 교수 과제 첨부파일용 편의 메소드
+    public String saveAssignmentAttachment(MultipartFile file, String professorName, String assignmentTitle) throws IOException {
+        String prefix = String.format("%s_assignment_%s", professorName, assignmentTitle);
+        return saveFile(file, prefix);
     }
 
     public boolean deleteFile(String fileName) {
@@ -72,5 +83,22 @@ public class FileService {
     public boolean fileExists(String fileName) {
         Path filePath = Paths.get(uploadDir).resolve(fileName);
         return Files.exists(filePath);
+    }
+
+    public String getFileDisplayName(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return "파일";
+        }
+
+        // 저장된 파일명에서 원본 확장자 추출
+        String[] parts = fileName.split("_");
+        if (parts.length >= 3) {
+            String lastPart = parts[parts.length - 1];
+            if (lastPart.contains(".")) {
+                String extension = lastPart.substring(lastPart.lastIndexOf("."));
+                return "첨부파일" + extension;
+            }
+        }
+        return "첨부파일";
     }
 }

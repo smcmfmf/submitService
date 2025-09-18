@@ -100,7 +100,7 @@ public class StudentController {
             }
 
             // 파일 실제 저장
-            String savedFileName = fileService.saveFile(file, student.getName());
+            String savedFileName = fileService.saveStudentSubmission(file, student.getName());
             String fileUrl = "/files/download/" + savedFileName;
 
             Assignment assignment = assignmentService.getAssignmentById(assignmentId);

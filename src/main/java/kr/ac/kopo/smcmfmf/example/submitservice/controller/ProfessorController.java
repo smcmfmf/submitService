@@ -6,11 +6,14 @@ import kr.ac.kopo.smcmfmf.example.submitservice.domain.Submission;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.User;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.AssignmentService;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.CourseService;
+import kr.ac.kopo.smcmfmf.example.submitservice.service.FileService;
 import kr.ac.kopo.smcmfmf.example.submitservice.service.SubmissionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,10 +21,12 @@ import java.util.List;
 @Controller
 @RequestMapping("/professor")
 @RequiredArgsConstructor
+@Slf4j
 public class ProfessorController {
     private final CourseService courseService;
     private final AssignmentService assignmentService;
     private final SubmissionService submissionService;
+    private final FileService fileService;
 
     @GetMapping("/dashboard")
     public String dashboard(@SessionAttribute("user") User user, Model model) {
@@ -64,14 +69,38 @@ public class ProfessorController {
         return "professor/assignment_form";
     }
 
-    // 과제 생성
+    // 과제 생성 (파일 업로드 지원)
     @PostMapping("/course/{courseId}/assignment/new")
     public String createAssignment(@PathVariable Long courseId,
-                                   @ModelAttribute Assignment assignment) {
-        Course course = courseService.getCourseById(courseId);
-        assignment.setCourse(course);
-        assignmentService.createAssignment(assignment);
-        return "redirect:/professor/course/" + courseId;
+                                   @ModelAttribute Assignment assignment,
+                                   @RequestParam(value = "attachmentFile", required = false) MultipartFile attachmentFile,
+                                   @SessionAttribute("user") User professor,
+                                   Model model) {
+        try {
+            Course course = courseService.getCourseById(courseId);
+            assignment.setCourse(course);
+
+            // 첨부파일이 있는 경우 저장
+            if (attachmentFile != null && !attachmentFile.isEmpty()) {
+                String savedFileName = fileService.saveAssignmentAttachment(
+                        attachmentFile,
+                        professor.getName(),
+                        assignment.getTitle()
+                );
+                String fileUrl = "/files/download/" + savedFileName;
+                assignment.setAttachmentUrl(fileUrl);
+                log.info("과제 첨부파일 저장 완료: {}", savedFileName);
+            }
+
+            assignmentService.createAssignment(assignment);
+            return "redirect:/professor/course/" + courseId;
+        } catch (Exception e) {
+            log.error("과제 생성 중 오류 발생", e);
+            model.addAttribute("error", "과제 생성 중 오류가 발생했습니다.");
+            model.addAttribute("assignment", assignment);
+            model.addAttribute("courseId", courseId);
+            return "professor/assignment_form";
+        }
     }
 
     // 특정 과제의 제출물 확인
