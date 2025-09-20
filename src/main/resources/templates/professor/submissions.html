@@ -41,6 +41,22 @@
             margin: 0 auto;
             padding: 20px;
         }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
         .assignment-info {
             background-color: white;
             padding: 25px;
@@ -85,12 +101,31 @@
             color: #333;
             font-size: 1.5em;
         }
-        .submission-count {
-            background-color: #4CAF50;
-            color: white;
+        .submission-stats {
+            display: flex;
+            gap: 15px;
+        }
+        .stat-badge {
             padding: 8px 16px;
             border-radius: 20px;
             font-weight: bold;
+            font-size: 0.9em;
+        }
+        .stat-total {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .stat-graded {
+            background-color: #28a745;
+            color: white;
+        }
+        .stat-completed {
+            background-color: #007bff;
+            color: white;
+        }
+        .stat-pending {
+            background-color: #ffc107;
+            color: #212529;
         }
         .submissions-table {
             width: 100%;
@@ -117,6 +152,9 @@
         .submissions-table tr:hover {
             background-color: #f8f9fa;
         }
+        .submission-row.completed {
+            background-color: #e3f2fd;
+        }
         .submission-row.graded {
             background-color: #e8f5e8;
         }
@@ -131,6 +169,10 @@
             text-align: center;
             display: inline-block;
         }
+        .status-completed {
+            background-color: #007bff;
+            color: white;
+        }
         .status-graded {
             background-color: #28a745;
             color: white;
@@ -143,6 +185,11 @@
             font-size: 1.1em;
             font-weight: bold;
             color: #28a745;
+        }
+        .completed-grade {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #007bff;
         }
         .file-link {
             color: #007bff;
@@ -164,6 +211,8 @@
             border-radius: 6px;
             font-weight: bold;
             transition: background-color 0.3s;
+            display: inline-block;
+            text-align: center;
         }
         .grade-btn:hover {
             background-color: #218838;
@@ -173,6 +222,19 @@
         }
         .grade-btn.modify:hover {
             background-color: #138496;
+        }
+        .grade-btn.disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .grade-btn.disabled:hover {
+            background-color: #6c757d;
+        }
+        .completed-icon {
+            color: #007bff;
+            font-size: 1.2em;
+            margin-right: 5px;
         }
         .empty-state {
             text-align: center;
@@ -200,6 +262,10 @@
             .submissions-table td {
                 padding: 10px 8px;
             }
+            .submission-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -213,6 +279,14 @@
 </div>
 
 <div class="container">
+    <!-- 성공/에러 메시지 -->
+    <div th:if="${success}" class="alert alert-success">
+        <strong>✅ 성공:</strong> <span th:text="${success}">성공 메시지</span>
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
+    </div>
+
     <div class="assignment-info">
         <h2 th:text="${assignment.title}">과제명</h2>
         <div class="assignment-description" th:text="${assignment.description}">과제 설명</div>
@@ -224,8 +298,19 @@
     <div class="submissions-section">
         <div class="section-header">
             <h2>📝 제출물 목록</h2>
-            <div class="submission-count">
-                <span th:text="${#lists.size(submissions)}">0</span>건 제출
+            <div class="submission-stats">
+                <div class="stat-badge stat-total">
+                    📊 총 <span th:text="${#lists.size(submissions)}">0</span>건
+                </div>
+                <div class="stat-badge stat-completed">
+                    🔒 완료 <span th:text="${#lists.size(#lists.select(submissions, s -> s.isGraded))}">0</span>건
+                </div>
+                <div class="stat-badge stat-graded">
+                    ✅ 채점 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade != null && !s.isGraded))}">0</span>건
+                </div>
+                <div class="stat-badge stat-pending">
+                    ⏳ 대기 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade == null))}">0</span>건
+                </div>
             </div>
         </div>
 
@@ -248,7 +333,7 @@
             </thead>
             <tbody>
             <tr th:each="submission : ${submissions}"
-                th:class="'submission-row ' + (${submission.grade != null} ? 'graded' : 'ungraded')">
+                th:class="'submission-row ' + (${submission.isGraded} ? 'completed' : (${submission.grade != null} ? 'graded' : 'ungraded'))">
                 <td>
                     <strong th:text="${submission.student.name}">학생명</strong>
                 </td>
@@ -259,29 +344,42 @@
                     </a>
                 </td>
                 <td>
-                            <span th:if="${submission.grade != null}"
-                                  th:text="${submission.grade} + '점'"
-                                  class="grade-display">점수</span>
+                    <span th:if="${submission.grade != null && submission.isGraded}"
+                          th:text="${submission.grade} + '점'"
+                          class="completed-grade">
+                        <span class="completed-icon">🔒</span>점수
+                    </span>
+                    <span th:if="${submission.grade != null && !submission.isGraded}"
+                          th:text="${submission.grade} + '점'"
+                          class="grade-display">점수</span>
                     <span th:unless="${submission.grade != null}"
                           style="color: #999; font-style: italic;">미채점</span>
                 </td>
                 <td>
-                            <span th:if="${submission.grade != null}"
-                                  class="status-badge status-graded">✅ 채점 완료</span>
+                    <span th:if="${submission.isGraded}"
+                          class="status-badge status-completed">
+                        🔒 평가완료
+                    </span>
+                    <span th:if="${!submission.isGraded && submission.grade != null}"
+                          class="status-badge status-graded">
+                        ✅ 채점완료
+                    </span>
                     <span th:unless="${submission.grade != null}"
-                          class="status-badge status-ungraded">⏳ 채점 대기</span>
+                          class="status-badge status-ungraded">
+                        ⏳ 채점대기
+                    </span>
                 </td>
                 <td>
-                    <a th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"
+                    <!-- 평가 완료된 경우 -->
+                    <span th:if="${submission.isGraded}" class="grade-btn disabled">
+                        🔒 평가완료
+                    </span>
+                    <!-- 평가 완료되지 않은 경우 -->
+                    <a th:unless="${submission.isGraded}"
+                       th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"
                        th:class="'grade-btn ' + (${submission.grade != null} ? 'modify' : '')">
                         <span th:if="${submission.grade != null}">✏️ 점수 수정</span>
                         <span th:unless="${submission.grade != null}">📝 채점하기</span>
                     </a>
                 </td>
             </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-</body>
-</html>

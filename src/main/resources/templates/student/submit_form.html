@@ -43,13 +43,54 @@
             color: #e74c3c;
             font-weight: bold;
         }
-        .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
+        .alert {
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 20px;
+            border: 1px solid;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .graded-warning {
+            background-color: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .graded-warning h3 {
+            margin: 0 0 15px 0;
+            color: #dc3545;
+            font-size: 1.3em;
+        }
+        .graded-warning .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        .existing-submission {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .existing-submission strong {
+            color: #856404;
         }
         .form-group {
             margin-bottom: 20px;
@@ -74,6 +115,12 @@
             border-color: #4CAF50;
             background-color: #f0f8f0;
         }
+        input[type="file"]:disabled {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
         button {
             width: 100%;
             padding: 14px;
@@ -87,9 +134,14 @@
             margin-top: 10px;
             transition: background-color 0.3s, transform 0.1s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #45a049;
             transform: translateY(-1px);
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
         }
         .cancel-link {
             display: block;
@@ -136,15 +188,24 @@
             font-size: 14px;
             color: #666;
         }
-        .existing-submission {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+        .disabled-form {
+            opacity: 0.6;
+            pointer-events: none;
         }
-        .existing-submission strong {
-            color: #856404;
+        .view-submission-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .view-submission-btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -168,43 +229,100 @@
         </p>
     </div>
 
+    <!-- 성공 메시지 -->
+    <div th:if="${success}" class="alert alert-success">
+        <strong>✅ 성공:</strong> <span th:text="${success}">성공 메시지</span>
+    </div>
+
     <!-- 에러 메시지 표시 -->
-    <div th:if="${error}" class="warning">
+    <div th:if="${error}" class="alert alert-error">
         <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
     </div>
 
-    <!-- 기존 제출물이 있는 경우 경고 -->
-    <div th:if="${existingSubmission}" class="existing-submission">
-        <strong>⚠️ 재제출 안내</strong>
-        <p>이미 제출한 과제가 있습니다. 다시 제출하면 기존 제출물이 대체됩니다.</p>
-        <p><strong>기존 제출 시간:</strong> <span th:text="${#temporals.format(existingSubmission.submittedAt, 'yyyy년 MM월 dd일 HH:mm')}">제출시간</span></p>
+    <!-- 평가 완료된 과제인 경우 경고 -->
+    <div th:if="${existingSubmission && existingSubmission.isGraded}" class="graded-warning">
+        <div class="icon">🔒</div>
+        <h3>평가가 완료된 과제입니다</h3>
+        <p>이 과제는 이미 교수님의 평가가 완료되어 더 이상 재제출할 수 없습니다.</p>
+        <p><strong>평가 완료일:</strong> <span th:text="${#temporals.format(existingSubmission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">완료일</span></p>
+        <p><strong>받은 점수:</strong> <span th:text="${existingSubmission.grade}">점수</span>점 / 100점</p>
+
+        <a th:href="@{/student/assignment/{id}/my-submission(id=${assignment.assignmentId})}" class="view-submission-btn">
+            📋 내 제출물 상세보기
+        </a>
+
+        <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}" class="cancel-link">과제 목록으로 돌아가기</a>
     </div>
 
-    <div class="form-help">
-        <h4>📋 제출 안내</h4>
-        <ul>
-            <li>허용되는 파일 형식을 확인해주세요</li>
-            <li>파일 크기 제한을 준수해주세요</li>
-            <li>제출 후에는 파일을 다시 확인해보세요</li>
-            <li>마감일 이전에 여유를 두고 제출하세요</li>
-        </ul>
-    </div>
-
-    <form th:action="@{/student/assignment/{assignmentId}/submit(assignmentId=${assignment.assignmentId})}"
-          method="post" enctype="multipart/form-data">
-
-        <div class="form-group">
-            <label for="file">📁 제출할 파일 선택 <span style="color: #e74c3c;">*</span></label>
-            <input type="file" id="file" name="file" required>
-            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                파일을 선택하여 과제를 제출하세요.
-            </small>
+    <!-- 평가 완료되지 않은 경우에만 제출 폼 표시 -->
+    <div th:unless="${existingSubmission && existingSubmission.isGraded}">
+        <!-- 기존 제출물이 있는 경우 경고 (평가 완료되지 않음) -->
+        <div th:if="${existingSubmission && !existingSubmission.isGraded}" class="existing-submission">
+            <strong>⚠️ 재제출 안내</strong>
+            <p>이미 제출한 과제가 있습니다. 다시 제출하면 기존 제출물이 대체됩니다.</p>
+            <p><strong>기존 제출 시간:</strong> <span th:text="${#temporals.format(existingSubmission.submittedAt, 'yyyy년 MM월 dd일 HH:mm')}">제출시간</span></p>
+            <p th:if="${existingSubmission.grade != null}">
+                <strong>현재 점수:</strong> <span th:text="${existingSubmission.grade}">점수</span>점 (임시저장됨)
+            </p>
         </div>
 
-        <button type="submit">✅ 과제 제출하기</button>
-    </form>
+        <div class="form-help" th:unless="${existingSubmission && existingSubmission.isGraded}">
+            <h4>📋 제출 안내</h4>
+            <ul>
+                <li>허용되는 파일 형식을 확인해주세요</li>
+                <li>파일 크기 제한을 준수해주세요</li>
+                <li>제출 후에는 파일을 다시 확인해보세요</li>
+                <li>마감일 이전에 여유를 두고 제출하세요</li>
+                <li>평가가 완료되기 전까지는 재제출이 가능합니다</li>
+            </ul>
+        </div>
 
-    <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}" class="cancel-link">취소</a>
+        <form th:action="@{/student/assignment/{assignmentId}/submit(assignmentId=${assignment.assignmentId})}"
+              method="post" enctype="multipart/form-data" th:unless="${existingSubmission && existingSubmission.isGraded}">
+
+            <div class="form-group">
+                <label for="file">📁 제출할 파일 선택 <span style="color: #e74c3c;">*</span></label>
+                <input type="file" id="file" name="file" required
+                       th:disabled="${existingSubmission && existingSubmission.isGraded}">
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    파일을 선택하여 과제를 제출하세요.
+                </small>
+            </div>
+
+            <button type="submit" th:disabled="${existingSubmission && existingSubmission.isGraded}">
+                <span th:if="${existingSubmission && !existingSubmission.isGraded}">🔄 과제 재제출하기</span>
+                <span th:unless="${existingSubmission}">✅ 과제 제출하기</span>
+            </button>
+        </form>
+
+        <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}"
+           class="cancel-link"
+           th:unless="${existingSubmission && existingSubmission.isGraded}">취소</a>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 재제출 버튼 클릭 시 확인 메시지
+        const form = document.querySelector('form');
+        const existingSubmission = /*[[${existingSubmission}]]*/ null;
+
+        if (form && existingSubmission && !existingSubmission.isGraded) {
+            form.addEventListener('submit', function(e) {
+                const confirmed = confirm(
+                    '기존 제출물을 새 파일로 교체하시겠습니까?\n\n' +
+                    '⚠️ 주의사항:\n' +
+                    '• 기존 제출물이 완전히 대체됩니다\n' +
+                    '• 기존 점수와 피드백이 초기화될 수 있습니다\n\n' +
+                    '계속하시겠습니까?'
+                );
+
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
 </body>
-</html>
+</html>s

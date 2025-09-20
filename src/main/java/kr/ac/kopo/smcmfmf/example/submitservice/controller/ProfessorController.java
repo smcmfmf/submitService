@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -115,17 +116,95 @@ public class ProfessorController {
 
     // 점수 및 피드백 입력 폼
     @GetMapping("/submission/{submissionId}/grade")
-    public String gradeForm(@PathVariable Long submissionId, Model model) {
-        Submission submission = submissionService.getSubmissionById(submissionId);
-        model.addAttribute("submission", submission);
-        return "professor/grade_form";
+    public String gradeForm(@PathVariable Long submissionId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Submission submission = submissionService.getSubmissionById(submissionId);
+
+            // 평가 완료된 과제인지 확인
+            if (submission.getIsGraded()) {
+                redirectAttributes.addFlashAttribute("error", "이미 평가가 완료된 과제입니다. 수정할 수 없습니다.");
+                return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
+            }
+
+            model.addAttribute("submission", submission);
+            return "professor/grade_form";
+        } catch (Exception e) {
+            log.error("채점 폼 로드 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "채점 폼을 불러올 수 없습니다.");
+            return "redirect:/professor/dashboard";
+        }
     }
 
-    // 점수 및 피드백 저장
+    // 임시 점수 저장 (평가 미완료)
     @PostMapping("/submission/{submissionId}/grade")
-    public String gradeSubmission(@PathVariable Long submissionId,
+    public String saveGrade(@PathVariable Long submissionId,
+                            @RequestParam BigDecimal grade,
+                            @RequestParam String feedback,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            Submission submission = submissionService.updateGradeAndFeedback(submissionId, grade, feedback);
+            redirectAttributes.addFlashAttribute("success", "점수가 임시 저장되었습니다. 평가를 완료하려면 '평가 완료' 버튼을 클릭하세요.");
+            return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
+        } catch (IllegalStateException e) {
+            log.warn("점수 저장 실패: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/professor/submission/" + submissionId + "/grade";
+        } catch (Exception e) {
+            log.error("점수 저장 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "점수 저장 중 오류가 발생했습니다.");
+            return "redirect:/professor/submission/" + submissionId + "/grade";
+        }
+    }
+
+    // 평가 완료 처리
+    @PostMapping("/submission/{submissionId}/complete")
+    public String completeGrading(@PathVariable Long submissionId,
                                   @RequestParam BigDecimal grade,
-                                  @RequestParam String feedback) {
+                                  @RequestParam String feedback,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            Submission submission = submissionService.completeGrading(submissionId, grade, feedback);
+            redirectAttributes.addFlashAttribute("success",
+                    "평가가 완료되었습니다. 이제 학생과 교수 모두 수정할 수 없습니다.");
+            return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
+        } catch (IllegalStateException e) {
+            log.warn("평가 완료 실패: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/professor/submission/" + submissionId + "/grade";
+        } catch (Exception e) {
+            log.error("평가 완료 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "평가 완료 중 오류가 발생했습니다.");
+            return "redirect:/professor/submission/" + submissionId + "/grade";
+        }
+    }
+
+    // 평가 완료 취소 (관리자 기능)
+    @PostMapping("/submission/{submissionId}/cancel-completion")
+    public String cancelGradingCompletion(@PathVariable Long submissionId,
+                                          @SessionAttribute("user") User professor,
+                                          RedirectAttributes redirectAttributes) {
+        try {
+            // 관리자 권한 확인 (필요시 구현)
+            Submission submission = submissionService.cancelGradingCompletion(submissionId);
+            redirectAttributes.addFlashAttribute("success", "평가 완료가 취소되었습니다. 이제 다시 수정할 수 있습니다.");
+            return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
+        } catch (IllegalStateException e) {
+            log.warn("평가 완료 취소 실패: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/professor/dashboard";
+        } catch (Exception e) {
+            log.error("평가 완료 취소 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "평가 완료 취소 중 오류가 발생했습니다.");
+            return "redirect:/professor/dashboard";
+        }
+    }
+
+    // 기존 메소드 (하위 호환성을 위해 유지)
+    @Deprecated
+    @PostMapping("/submission/{submissionId}/grade-legacy")
+    public String gradeSubmissionLegacy(@PathVariable Long submissionId,
+                                        @RequestParam BigDecimal grade,
+                                        @RequestParam String feedback) {
         Submission submission = submissionService.updateGradeAndFeedback(submissionId, grade, feedback);
         return "redirect:/professor/assignment/" + submission.getAssignment().getAssignmentId() + "/submissions";
     }

@@ -173,6 +173,30 @@
             text-align: center;
             margin-bottom: 25px;
         }
+        .completed-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+            border: 3px solid #2196F3;
+        }
+        .completed-grade {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        .completed-status {
+            color: #0d47a1;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .completed-info {
+            background-color: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #e65100;
+            font-weight: bold;
+        }
         .graded-section {
             background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
             border: 3px solid #28a745;
@@ -287,6 +311,12 @@
             background-color: #f57c00;
             transform: translateY(-2px);
         }
+        .resubmit-btn.disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.6;
+        }
         .clearfix::after {
             content: "";
             display: table;
@@ -344,6 +374,10 @@
                     <div class="info-label">📅 제출일시</div>
                     <div class="info-value" th:text="${#temporals.format(submission.submittedAt, 'yyyy년 MM월 dd일 HH:mm')}">제출일</div>
                 </div>
+                <div th:if="${submission.isGraded}" class="info-item">
+                    <div class="info-label">🔒 평가완료일</div>
+                    <div class="info-value" th:text="${#temporals.format(submission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">평가완료일</div>
+                </div>
             </div>
 
             <div class="file-download">
@@ -353,12 +387,26 @@
             </div>
         </div>
 
-        <!-- 채점 결과 섹션 -->
-        <div th:if="${submission.grade != null}" class="grade-section graded-section">
+        <!-- 평가 완료된 경우 -->
+        <div th:if="${submission.isGraded}" class="grade-section completed-section">
+            <div class="completed-grade">
+                🔒 <span th:text="${submission.grade}">점수</span>점 / 100점
+            </div>
+            <div class="completed-status">✅ 평가가 완료되었습니다</div>
+            <div class="completed-info">
+                📌 이 과제는 평가가 완료되어 더 이상 재제출할 수 없습니다.
+            </div>
+        </div>
+
+        <!-- 채점 완료, 평가 미완료 상태 -->
+        <div th:if="${submission.grade != null && !submission.isGraded}" class="grade-section graded-section">
             <div class="grade-display">
                 🎯 <span th:text="${submission.grade}">점수</span>점 / 100점
             </div>
-            <div class="grade-status">✅ 채점이 완료되었습니다</div>
+            <div class="grade-status">✅ 채점이 완료되었습니다 (임시저장)</div>
+            <div style="background-color: #fff3cd; padding: 10px; border-radius: 6px; margin-top: 10px; color: #856404; font-size: 0.9em;">
+                💡 교수님이 아직 최종 평가를 완료하지 않아 재제출이 가능합니다.
+            </div>
         </div>
 
         <!-- 미채점 상태 -->
@@ -374,11 +422,20 @@
             <div class="feedback-content" th:text="${submission.feedback}">피드백 내용</div>
         </div>
 
-        <!-- 재제출 버튼 -->
-        <div class="action-buttons">
-            <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}" class="resubmit-btn">
+        <!-- 재제출 버튼 (평가 완료되지 않은 경우에만) -->
+        <div class="action-buttons" th:unless="${submission.isGraded}">
+            <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}"
+               class="resubmit-btn"
+               th:classappend="${submission.isGraded} ? 'disabled' : ''">
                 🔄 과제 재제출하기
             </a>
+        </div>
+
+        <!-- 평가 완료된 경우 안내 메시지 -->
+        <div th:if="${submission.isGraded}" class="action-buttons">
+            <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; text-align: center; color: #1976D2; font-weight: bold;">
+                🔒 평가가 완료되어 더 이상 수정할 수 없습니다.
+            </div>
         </div>
     </div>
 
@@ -395,5 +452,45 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 평가 완료 상태 확인
+        const isGraded = /*[[${submission?.isGraded}]]*/ false;
+
+        if (isGraded) {
+            console.log('이 과제는 평가가 완료되었습니다.');
+
+            // 재제출 버튼이 있다면 비활성화
+            const resubmitBtns = document.querySelectorAll('.resubmit-btn');
+            resubmitBtns.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.style.pointerEvents = 'none';
+            });
+        }
+
+        // 재제출 버튼 클릭 시 확인 메시지 (평가 완료되지 않은 경우)
+        const resubmitBtn = document.querySelector('.resubmit-btn:not(.disabled)');
+        if (resubmitBtn) {
+            resubmitBtn.addEventListener('click', function(e) {
+                const hasGrade = /*[[${submission?.grade != null}]]*/ false;
+
+                if (hasGrade) {
+                    const confirmed = confirm(
+                        '현재 채점된 점수가 있습니다. 재제출하시겠습니까?\n\n' +
+                        '⚠️ 주의사항:\n' +
+                        '• 재제출 시 기존 점수가 초기화될 수 있습니다\n' +
+                        '• 교수님이 다시 채점해야 합니다\n\n' +
+                        '계속하시겠습니까?'
+                    );
+
+                    if (!confirmed) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

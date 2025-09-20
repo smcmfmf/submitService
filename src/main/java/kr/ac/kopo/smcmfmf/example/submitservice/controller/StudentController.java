@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,13 +77,32 @@ public class StudentController {
     @GetMapping("/assignment/{assignmentId}/submit")
     public String submitForm(@PathVariable Long assignmentId,
                              @SessionAttribute("user") User student,
-                             Model model) {
-        Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        Optional<Submission> existingSubmission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
+                             Model model,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            Optional<Submission> existingSubmission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
 
-        model.addAttribute("assignment", assignment);
-        existingSubmission.ifPresent(submission -> model.addAttribute("existingSubmission", submission));
-        return "student/submit_form";
+            // 기존 제출물이 있고 평가가 완료된 경우 재제출 불가
+            if (existingSubmission.isPresent() && existingSubmission.get().getIsGraded()) {
+                redirectAttributes.addFlashAttribute("error",
+                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다.");
+                return "redirect:/student/assignment/" + assignmentId + "/my-submission";
+            }
+
+            model.addAttribute("assignment", assignment);
+            existingSubmission.ifPresent(submission -> model.addAttribute("existingSubmission", submission));
+
+            // 재제출 가능 여부 추가
+            boolean canResubmit = submissionService.canResubmit(assignment, student);
+            model.addAttribute("canResubmit", canResubmit);
+
+            return "student/submit_form";
+        } catch (Exception e) {
+            log.error("제출 폼 로드 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "제출 폼을 불러올 수 없습니다.");
+            return "redirect:/student/dashboard";
+        }
     }
 
     // 과제 제출 처리
@@ -90,7 +110,8 @@ public class StudentController {
     public String submitAssignment(@PathVariable Long assignmentId,
                                    @SessionAttribute("user") User student,
                                    @RequestParam("file") MultipartFile file,
-                                   Model model) {
+                                   Model model,
+                                   RedirectAttributes redirectAttributes) {
         try {
             if (file.isEmpty()) {
                 model.addAttribute("error", "파일을 선택해주세요.");
@@ -99,14 +120,30 @@ public class StudentController {
                 return "student/submit_form";
             }
 
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+
+            // 재제출 가능 여부 확인
+            if (!submissionService.canResubmit(assignment, student)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다.");
+                return "redirect:/student/assignment/" + assignmentId + "/my-submission";
+            }
+
             // 파일 실제 저장
             String savedFileName = fileService.saveStudentSubmission(file, student.getName());
             String fileUrl = "/files/download/" + savedFileName;
 
-            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
             submissionService.submitAssignment(assignment, student, fileUrl);
 
+            redirectAttributes.addFlashAttribute("success", "과제가 성공적으로 제출되었습니다!");
             return "redirect:/student/course/" + assignment.getCourse().getCourseId();
+
+        } catch (IllegalStateException e) {
+            log.warn("파일 업로드 실패: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            model.addAttribute("assignment", assignment);
+            return "student/submit_form";
         } catch (Exception e) {
             log.error("파일 업로드 중 오류 발생", e);
             model.addAttribute("error", "파일 업로드 중 오류가 발생했습니다.");
@@ -133,7 +170,17 @@ public class StudentController {
         Optional<Submission> submission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
 
         model.addAttribute("assignment", assignment);
-        submission.ifPresent(s -> model.addAttribute("submission", s));
+        submission.ifPresent(s -> {
+            model.addAttribute("submission", s);
+            // 재제출 가능 여부 추가
+            model.addAttribute("canResubmit", !s.getIsGraded());
+        });
+
+        // 재제출 가능 여부 (제출물이 없는 경우)
+        if (submission.isEmpty()) {
+            model.addAttribute("canResubmit", true);
+        }
+
         return "student/submission_detail";
     }
 }

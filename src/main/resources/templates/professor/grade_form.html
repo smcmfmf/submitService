@@ -41,6 +41,22 @@
             margin: 0 auto;
             padding: 20px;
         }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
         .submission-info {
             background-color: white;
             border-radius: 10px;
@@ -98,6 +114,17 @@
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
+        }
+        .graded-status {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
         }
         .grade-form {
             background-color: white;
@@ -160,39 +187,45 @@
             display: flex;
             gap: 15px;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
-        .submit-btn {
+        .btn {
             flex: 1;
+            min-width: 200px;
             padding: 14px;
-            background-color: #28a745;
-            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        .submit-btn:hover {
-            background-color: #218838;
-            transform: translateY(-1px);
-        }
-        .cancel-btn {
-            flex: 1;
-            padding: 14px;
-            background-color: #6c757d;
-            color: white;
             text-decoration: none;
-            border-radius: 8px;
             text-align: center;
-            font-size: 16px;
-            font-weight: bold;
             transition: background-color 0.3s, transform 0.1s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .cancel-btn:hover {
+        .btn-save {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-save:hover {
+            background-color: #138496;
+            transform: translateY(-1px);
+        }
+        .btn-complete {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-complete:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-cancel:hover {
             background-color: #545b62;
             transform: translateY(-1px);
         }
@@ -205,10 +238,34 @@
             font-size: 14px;
             color: #666;
         }
+        .completion-warning {
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .completion-warning h4 {
+            margin: 0 0 10px 0;
+            color: #e65100;
+            font-size: 1.1em;
+        }
+        .completion-warning ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .completion-warning li {
+            margin: 5px 0;
+            color: #bf360c;
+        }
         .clearfix::after {
             content: "";
             display: table;
             clear: both;
+        }
+        .disabled-form {
+            opacity: 0.6;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -222,6 +279,14 @@
 </div>
 
 <div class="container">
+    <!-- 성공/에러 메시지 -->
+    <div th:if="${success}" class="alert alert-success">
+        <strong>✅ 성공:</strong> <span th:text="${success}">성공 메시지</span>
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
+    </div>
+
     <div class="submission-info">
         <h3>📋 제출 정보</h3>
         <div class="info-grid">
@@ -246,19 +311,37 @@
                 </div>
             </div>
         </div>
-        <div th:if="${submission.grade != null}" class="current-grade">
-            🎯 현재 점수: <span th:text="${submission.grade}">점수</span>점 / 100점
+
+        <!-- 평가 완료 상태 표시 -->
+        <div th:if="${submission.isGraded}" class="graded-status">
+            🔒 이 과제는 이미 평가가 완료되었습니다 (완료일: <span th:text="${#temporals.format(submission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">완료일</span>)
+            <br>평가 완료된 과제는 학생과 교수 모두 수정할 수 없습니다.
+        </div>
+
+        <div th:if="${submission.grade != null && !submission.isGraded}" class="current-grade">
+            🎯 현재 점수: <span th:text="${submission.grade}">점수</span>점 / 100점 (임시 저장됨)
         </div>
     </div>
 
-    <div class="grade-form">
+    <div class="grade-form" th:class="${submission.isGraded} ? 'grade-form disabled-form' : 'grade-form'">
         <h3>📊 채점 및 피드백</h3>
 
         <div class="help-text">
             💡 <strong>채점 안내:</strong> 점수는 0점부터 100점까지 입력 가능하며, 소수점도 사용할 수 있습니다. 피드백은 학생의 학습에 도움이 되도록 구체적으로 작성해주세요.
         </div>
 
-        <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post">
+        <!-- 평가 완료 전 경고 -->
+        <div th:unless="${submission.isGraded}" class="completion-warning">
+            <h4>⚠️ 평가 완료에 대한 중요 안내</h4>
+            <ul>
+                <li><strong>'임시 저장'</strong>: 점수를 저장하되 아직 수정 가능한 상태로 유지</li>
+                <li><strong>'평가 완료'</strong>: 점수를 확정하고 더 이상 수정 불가능한 상태로 변경</li>
+                <li>평가 완료 후에는 학생과 교수 모두 수정할 수 없습니다</li>
+                <li>신중하게 검토한 후 평가를 완료해주세요</li>
+            </ul>
+        </div>
+
+        <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post" th:unless="${submission.isGraded}">
             <div class="form-group">
                 <label for="grade">📊 점수 (0-100점) <span style="color: #e74c3c;">*</span></label>
                 <input type="number" id="grade" name="grade" min="0" max="100" step="0.01"
@@ -272,12 +355,62 @@
             </div>
 
             <div class="button-group">
-                <button type="submit" class="submit-btn">✅ 채점 저장</button>
+                <button type="submit" class="btn btn-save" formaction="/professor/submission/{submissionId}/grade" th:formaction="@{/professor/submission/{id}/grade(id=${submission.submissionId})}">
+                    💾 임시 저장
+                </button>
+                <button type="submit" class="btn btn-complete" formaction="/professor/submission/{submissionId}/complete" th:formaction="@{/professor/submission/{id}/complete(id=${submission.submissionId})}">
+                    ✅ 평가 완료
+                </button>
                 <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"
-                   class="cancel-btn">❌ 취소</a>
+                   class="btn btn-cancel">❌ 취소</a>
             </div>
         </form>
+
+        <!-- 평가 완료된 경우 읽기 전용 표시 -->
+        <div th:if="${submission.isGraded}">
+            <div class="form-group">
+                <label>📊 확정된 점수</label>
+                <div style="font-size: 2em; text-align: center; color: #28a745; font-weight: bold; padding: 20px; background-color: #e8f5e8; border-radius: 8px;">
+                    🎯 <span th:text="${submission.grade}">점수</span>점 / 100점
+                </div>
+            </div>
+
+            <div class="form-group" th:if="${submission.feedback}">
+                <label>💬 확정된 피드백</label>
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; white-space: pre-line;" th:text="${submission.feedback}">
+                    피드백 내용
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"
+                   class="btn btn-cancel">🔙 제출물 목록으로</a>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    // 평가 완료 버튼 클릭 시 확인 메시지
+    document.addEventListener('DOMContentLoaded', function() {
+        const completeBtn = document.querySelector('.btn-complete');
+        if (completeBtn) {
+            completeBtn.addEventListener('click', function(e) {
+                const confirmed = confirm(
+                    '정말로 평가를 완료하시겠습니까?\n\n' +
+                    '⚠️ 주의사항:\n' +
+                    '• 평가 완료 후에는 점수와 피드백을 수정할 수 없습니다\n' +
+                    '• 학생도 더 이상 과제를 재제출할 수 없습니다\n' +
+                    '• 이 작업은 되돌릴 수 없습니다\n\n' +
+                    '계속하시겠습니까?'
+                );
+
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
