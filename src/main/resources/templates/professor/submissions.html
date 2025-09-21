@@ -301,16 +301,16 @@
             <h2>📝 제출물 목록</h2>
             <div class="submission-stats">
                 <div class="stat-badge stat-total">
-                    📊 총 <span th:text="${#lists.size(submissions)}">0</span>건
+                    📊 총 <span th:text="${totalSubmissions}">0</span>건
                 </div>
                 <div class="stat-badge stat-completed">
-                    🔒 완료 <span th:text="${#lists.size(#lists.select(submissions, s -> s.isGraded == true))}">0</span>건
+                    🔒 완료 <span th:text="${gradedCount}">0</span>건
                 </div>
                 <div class="stat-badge stat-graded">
-                    ✅ 채점 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade != null and s.isGraded != true))}">0</span>건
+                    ✅ 채점 <span th:text="${tempGradedCount}">0</span>건
                 </div>
                 <div class="stat-badge stat-pending">
-                    ⏳ 대기 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade == null))}">0</span>건
+                    ⏳ 대기 <span th:text="${ungradedCount}">0</span>건
                 </div>
             </div>
         </div>

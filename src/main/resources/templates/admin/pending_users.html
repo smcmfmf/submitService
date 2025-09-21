@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>승인 대기 사용자 - 관리자</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .back-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .user-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+        .user-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .user-info h3 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .user-email {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .role-badge {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .role-student { background-color: #3498db; color: white; }
+        .role-professor { background-color: #e74c3c; color: white; }
+        .user-details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+        .reason-input {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+    <script>
+        function confirmAction(action, userName) {
+            return confirm(`정말로 ${userName} 사용자를 ${action}하시겠습니까?`);
+        }
+    </script>
+</head>
+<body>
+<div class="header">
+    <a href="/admin/dashboard" class="back-link">← 대시보드로 돌아가기</a>
+    <h1>⏳ 승인 대기 사용자</h1>
+</div>
+
+<div class="container">
+    <!-- 성공/오류 메시지 -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="section">
+        <div th:if="${pendingUsers != null and !pendingUsers.empty}">
+            <div class="user-card" th:each="user : ${pendingUsers}">
+                <div class="user-header">
+                    <div class="user-info">
+                        <h3 th:text="${user.name}">사용자명</h3>
+                        <div class="user-email" th:text="${user.email}">이메일</div>
+                    </div>
+                    <span class="role-badge"
+                          th:class="'role-badge role-' + ${#strings.toLowerCase(user.role)}"
+                          th:text="${user.role.displayName}">역할</span>
+                </div>
+
+                <div class="user-details">
+                    <div class="detail-item">
+                        <span class="detail-label">신청일:</span>
+                        <span th:text="${#temporals.format(user.createdAt, 'yyyy년 MM월 dd일 HH:mm')}">신청일</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">역할:</span>
+                        <span th:text="${user.role.displayName}">역할</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">상태:</span>
+                        <span style="color: #f39c12; font-weight: bold;" th:text="${user.accountStatus.displayName}">상태</span>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <form th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" style="display: inline;">
+                        <input type="text" name="reason" placeholder="승인 사유 (선택)" class="reason-input">
+                        <button type="submit" class="btn btn-success"
+                                th:onclick="'return confirmAction(\'승인\', \'' + ${user.name} + '\')'">
+                            ✅ 승인
+                        </button>
+                    </form>
+
+                    <form th:action="@{/admin/users/{id}/reject(id=${user.id})}" method="post" style="display: inline;">
+                        <input type="text" name="reason" placeholder="거부 사유 (선택)" class="reason-input">
+                        <button type="submit" class="btn btn-danger"
+                                th:onclick="'return confirmAction(\'거부\', \'' + ${user.name} + '\')'">
+                            ❌ 거부
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${pendingUsers == null or pendingUsers.empty}" class="empty-message">
+            <h3>🎉 승인 대기 중인 사용자가 없습니다!</h3>
+            <p>모든 사용자가 처리되었습니다.</p>
+            <a href="/admin/dashboard" class="btn btn-primary">대시보드로 이동</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

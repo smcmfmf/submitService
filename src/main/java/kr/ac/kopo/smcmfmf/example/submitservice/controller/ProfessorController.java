@@ -197,14 +197,60 @@ public class ProfessorController {
         }
     }
 
-    // 특정 과제의 제출물 확인
+    // 특정 과제의 제출물 확인 메소드 수정
     @GetMapping("/assignment/{assignmentId}/submissions")
     public String viewSubmissions(@PathVariable Long assignmentId, Model model) {
-        Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        List<Submission> submissions = submissionService.getSubmissionsByAssignment(assignment);
-        model.addAttribute("assignment", assignment);
-        model.addAttribute("submissions", submissions);
-        return "professor/submissions";
+        try {
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            List<Submission> submissions = submissionService.getSubmissionsByAssignment(assignment);
+
+            // 상세한 통계 정보 계산
+            long totalSubmissions = submissions.size();
+
+            // 평가 완료된 제출물 (isGraded = true)
+            long gradedCount = submissions.stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getIsGraded()))
+                    .count();
+
+            // 임시 점수가 있지만 평가 완료되지 않은 제출물 (grade != null && isGraded = false)
+            long tempGradedCount = submissions.stream()
+                    .filter(s -> s.getGrade() != null && !Boolean.TRUE.equals(s.getIsGraded()))
+                    .count();
+
+            // 아직 점수가 없는 제출물 (grade == null)
+            long pendingCount = submissions.stream()
+                    .filter(s -> s.getGrade() == null)
+                    .count();
+
+            // 평가 대기 중 (평가 완료되지 않은 모든 제출물)
+            long ungradedCount = totalSubmissions - gradedCount;
+
+            // 평균 점수 계산 (평가 완료된 것만)
+            double averageScore = submissions.stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getIsGraded()) && s.getGrade() != null)
+                    .mapToDouble(s -> s.getGrade().doubleValue())
+                    .average()
+                    .orElse(0.0);
+
+            model.addAttribute("assignment", assignment);
+            model.addAttribute("submissions", submissions);
+            model.addAttribute("totalSubmissions", totalSubmissions);
+            model.addAttribute("gradedCount", gradedCount);
+            model.addAttribute("tempGradedCount", tempGradedCount);
+            model.addAttribute("pendingCount", pendingCount);
+            model.addAttribute("ungradedCount", ungradedCount);
+            model.addAttribute("averageScore", String.format("%.1f", averageScore));
+
+            log.info("제출물 조회 완료: assignment={}, total={}, graded={}, temp={}, pending={}",
+                    assignment.getTitle(), totalSubmissions, gradedCount, tempGradedCount, pendingCount);
+
+            return "professor/submissions";
+
+        } catch (Exception e) {
+            log.error("제출물 목록 조회 중 오류 발생: assignmentId={}", assignmentId, e);
+            model.addAttribute("error", "제출물 목록을 불러올 수 없습니다.");
+            return "professor/dashboard";
+        }
     }
 
     // 점수 및 피드백 입력 폼

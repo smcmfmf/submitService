@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>전체 사용자 관리 - 관리자</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .back-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+        .filter-group {
+            flex: 1;
+        }
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-filter {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            height: fit-content;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .users-table th, .users-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .users-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .users-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-approved { background-color: #d4edda; color: #155724; }
+        .status-rejected { background-color: #f8d7da; color: #721c24; }
+        .status-suspended { background-color: #d1ecf1; color: #0c5460; }
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .role-student { background-color: #3498db; color: white; }
+        .role-professor { background-color: #e74c3c; color: white; }
+        .role-admin { background-color: #9b59b6; color: white; }
+        .btn {
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin: 2px;
+            display: inline-block;
+        }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-success { background-color: #27ae60; color: white; }
+        .btn-warning { background-color: #f39c12; color: white; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .pagination .current {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .users-table {
+                font-size: 0.9em;
+            }
+            .users-table th, .users-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <a href="/admin/dashboard" class="back-link">← 대시보드로 돌아가기</a>
+    <h1>👥 전체 사용자 관리</h1>
+</div>
+
+<div class="container">
+    <!-- 필터 섹션 -->
+    <div class="filters">
+        <form method="get" th:action="@{/admin/users}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">계정 상태</label>
+                    <select name="status" class="filter-select">
+                        <option value="ALL">전체</option>
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status.displayName}"
+                                th:selected="${status.name() == currentStatus}">상태</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">역할</label>
+                    <select name="role" class="filter-select">
+                        <option value="ALL">전체</option>
+                        <option th:each="role : ${roles}"
+                                th:value="${role}"
+                                th:text="${role.displayName}"
+                                th:selected="${role.name() == currentRole}">역할</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-filter">🔍 필터 적용</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 사용자 목록 -->
+    <div class="section">
+        <div th:if="${users != null and users.hasContent()}">
+            <table class="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>역할</th>
+                    <th>상태</th>
+                    <th>가입일</th>
+                    <th>작업</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users.content}">
+                    <td th:text="${user.id}">1</td>
+                    <td th:text="${user.name}">사용자명</td>
+                    <td th:text="${user.email}">이메일</td>
+                    <td>
+                                <span class="role-badge"
+                                      th:class="'role-badge role-' + ${#strings.toLowerCase(user.role)}"
+                                      th:text="${user.role.displayName}">역할</span>
+                    </td>
+                    <td>
+                                <span class="status-badge"
+                                      th:class="'status-badge status-' + ${#strings.toLowerCase(user.accountStatus)}"
+                                      th:text="${user.accountStatus.displayName}">상태</span>
+                    </td>
+                    <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}">가입일</td>
+                    <td>
+                        <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-primary">
+                            👁️ 상세
+                        </a>
+                        <span th:if="${user.accountStatus.name() == 'PENDING'}">
+                                    <a th:href="@{/admin/users/pending}" class="btn btn-warning">승인</a>
+                                </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" th:if="${users.totalPages > 1}">
+                <a th:if="${users.hasPrevious()}"
+                   th:href="@{/admin/users(page=${users.number - 1}, status=${currentStatus}, role=${currentRole})}">이전</a>
+
+                <span th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
+                        <a th:if="${i != users.number}"
+                           th:href="@{/admin/users(page=${i}, status=${currentStatus}, role=${currentRole})}"
+                           th:text="${i + 1}">1</a>
+                        <span th:if="${i == users.number}" class="current" th:text="${i + 1}">1</span>
+                    </span>
+
+                <a th:if="${users.hasNext()}"
+                   th:href="@{/admin/users(page=${users.number + 1}, status=${currentStatus}, role=${currentRole})}">다음</a>
+            </div>
+        </div>
+
+        <div th:if="${users == null or !users.hasContent()}" class="empty-message">
+            <h3>😔 조건에 맞는 사용자가 없습니다</h3>
+            <p>필터 조건을 변경해보세요.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

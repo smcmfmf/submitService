@@ -208,6 +208,17 @@
         🎉 회원가입이 완료되었습니다! 로그인해주세요.
     </div>
 
+    <!-- 승인 대기 메시지 -->
+    <div th:if="${param.signup == 'pending'}" class="success-message" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); color: #856404; border-left: 4px solid #ffc107;">
+        ⏳ 회원가입이 완료되었습니다!<br>
+        관리자 승인 후 로그인할 수 있습니다.
+    </div>
+
+    <!-- 관리자 생성 완료 메시지 -->
+    <div th:if="${param.admin_created}" class="success-message">
+        🔐 관리자 계정이 생성되었습니다! 로그인해주세요.
+    </div>
+
     <form th:action="@{/login}" method="post" class="login-form">
         <div class="form-group">
             <input type="email" name="email" class="form-input" placeholder="📧 이메일 주소를 입력하세요" required>

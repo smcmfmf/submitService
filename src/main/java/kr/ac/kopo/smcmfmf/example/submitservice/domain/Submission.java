@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "submissions")
@@ -39,12 +40,12 @@ public class Submission {
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
-    // 평가 완료 여부를 나타내는 필드 추가
-    @Column(nullable = false)
+    // 평가 완료 여부를 나타내는 필드 - 기본값을 명시적으로 설정
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     @Builder.Default
-    private Boolean isGraded = false;
+    private Boolean isGraded = Boolean.FALSE;
 
-    // 평가 완료 시점을 기록하는 필드 추가
+    // 평가 완료 시점을 기록하는 필드
     private LocalDateTime gradedAt;
 
     @CreationTimestamp
@@ -54,46 +55,79 @@ public class Submission {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    // Boolean 타입에 대한 getter 메소드 명시적 정의
+    // Boolean 타입에 대한 getter 메소드를 안전하게 처리
     public Boolean getIsGraded() {
-        return this.isGraded;
+        return this.isGraded != null ? this.isGraded : Boolean.FALSE;
     }
 
     public void setIsGraded(Boolean isGraded) {
-        this.isGraded = isGraded;
+        this.isGraded = isGraded != null ? isGraded : Boolean.FALSE;
+    }
+
+    // Thymeleaf에서 사용할 수 있도록 boolean primitive 타입 getter 추가
+    public boolean isGraded() {
+        return Boolean.TRUE.equals(this.getIsGraded());
+    }
+
+    // Lombok @Data가 자동 생성하는 메소드들과 충돌하지 않도록 명시적으로 오버라이드
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Submission that = (Submission) o;
+        return Objects.equals(submissionId, that.submissionId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(submissionId);
     }
 
     // 평가 완료 처리 메소드
     public void completeGrading(BigDecimal grade, String feedback) {
+        if (grade == null) {
+            throw new IllegalArgumentException("점수는 필수 입력 항목입니다.");
+        }
+
         this.grade = grade;
         this.feedback = feedback;
-        this.isGraded = true;
+        this.isGraded = Boolean.TRUE;
         this.gradedAt = LocalDateTime.now();
     }
 
     // 평가 수정 처리 메소드 (평가 완료 전에만 가능)
     public void updateGrading(BigDecimal grade, String feedback) {
-        if (Boolean.TRUE.equals(this.isGraded)) {
+        if (Boolean.TRUE.equals(this.getIsGraded())) {
             throw new IllegalStateException("이미 평가가 완료된 과제는 수정할 수 없습니다.");
         }
+
+        if (grade == null) {
+            throw new IllegalArgumentException("점수는 필수 입력 항목입니다.");
+        }
+
         this.grade = grade;
         this.feedback = feedback;
     }
 
     // 재제출 처리 메소드 (평가 완료 전에만 가능)
     public void resubmit(String newFileUrl) {
-        if (Boolean.TRUE.equals(this.isGraded)) {
+        if (Boolean.TRUE.equals(this.getIsGraded())) {
             throw new IllegalStateException("이미 평가가 완료된 과제는 재제출할 수 없습니다.");
         }
+
+        if (newFileUrl == null || newFileUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("파일 URL은 필수입니다.");
+        }
+
         this.fileUrl = newFileUrl;
         // 기존 점수와 피드백 초기화
         this.grade = null;
         this.feedback = null;
     }
 
-    // 편의 메소드들
+    // 편의 메소드들 - null 체크를 강화
     public boolean isGradingCompleted() {
-        return Boolean.TRUE.equals(this.isGraded);
+        return Boolean.TRUE.equals(this.getIsGraded());
     }
 
     public boolean hasGrade() {
@@ -103,4 +137,16 @@ public class Submission {
     public boolean hasFeedback() {
         return this.feedback != null && !this.feedback.trim().isEmpty();
     }
-} /* 과제물을 채점하려하면 오류남 */
+
+    // toString 메소드에서 Lazy Loading 문제 방지
+    @Override
+    public String toString() {
+        return "Submission{" +
+                "submissionId=" + submissionId +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", grade=" + grade +
+                ", isGraded=" + isGraded +
+                ", submittedAt=" + submittedAt +
+                '}';
+    }
+}
