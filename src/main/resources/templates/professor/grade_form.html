@@ -313,12 +313,12 @@
         </div>
 
         <!-- 평가 완료 상태 표시 -->
-        <div th:if="${submission.isGraded}" class="graded-status">
+        <div th:if="${submission.isGraded == true}" class="graded-status">
             🔒 이 과제는 이미 평가가 완료되었습니다 (완료일: <span th:text="${#temporals.format(submission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">완료일</span>)
             <br>평가 완료된 과제는 학생과 교수 모두 수정할 수 없습니다.
         </div>
 
-        <div th:if="${submission.grade != null && !submission.isGraded}" class="current-grade">
+        <div th:if="${submission.grade != null and submission.isGraded != true}" class="current-grade">
             🎯 현재 점수: <span th:text="${submission.grade}">점수</span>점 / 100점 (임시 저장됨)
         </div>
     </div>
@@ -367,7 +367,7 @@
         </form>
 
         <!-- 평가 완료된 경우 읽기 전용 표시 -->
-        <div th:if="${submission.isGraded}">
+        <div th:if="${submission.isGraded == true}">
             <div class="form-group">
                 <label>📊 확정된 점수</label>
                 <div style="font-size: 2em; text-align: center; color: #28a745; font-weight: bold; padding: 20px; background-color: #e8f5e8; border-radius: 8px;">

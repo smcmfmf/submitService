@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title th:text="${assignment.title} + ' - 제출물 목록'">제출물 목록</title>
     <style>
+        /* (생략하지 않고 기존 스타일 그대로 유지) */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -303,10 +304,10 @@
                     📊 총 <span th:text="${#lists.size(submissions)}">0</span>건
                 </div>
                 <div class="stat-badge stat-completed">
-                    🔒 완료 <span th:text="${#lists.size(#lists.select(submissions, s -> s.isGraded))}">0</span>건
+                    🔒 완료 <span th:text="${#lists.size(#lists.select(submissions, s -> s.isGraded == true))}">0</span>건
                 </div>
                 <div class="stat-badge stat-graded">
-                    ✅ 채점 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade != null && !s.isGraded))}">0</span>건
+                    ✅ 채점 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade != null and s.isGraded != true))}">0</span>건
                 </div>
                 <div class="stat-badge stat-pending">
                     ⏳ 대기 <span th:text="${#lists.size(#lists.select(submissions, s -> s.grade == null))}">0</span>건
@@ -333,7 +334,7 @@
             </thead>
             <tbody>
             <tr th:each="submission : ${submissions}"
-                th:class="'submission-row ' + (${submission.isGraded} ? 'completed' : (${submission.grade != null} ? 'graded' : 'ungraded'))">
+                th:class="'submission-row ' + (${submission.isGraded} == true ? 'completed' : (${submission.grade != null} ? 'graded' : 'ungraded'))">
                 <td>
                     <strong th:text="${submission.student.name}">학생명</strong>
                 </td>
@@ -344,23 +345,23 @@
                     </a>
                 </td>
                 <td>
-                    <span th:if="${submission.grade != null && submission.isGraded}"
+                    <span th:if="${submission.grade != null and submission.isGraded == true}"
                           th:text="${submission.grade} + '점'"
                           class="completed-grade">
                         <span class="completed-icon">🔒</span>점수
                     </span>
-                    <span th:if="${submission.grade != null && !submission.isGraded}"
+                    <span th:if="${submission.grade != null and submission.isGraded != true}"
                           th:text="${submission.grade} + '점'"
                           class="grade-display">점수</span>
                     <span th:unless="${submission.grade != null}"
                           style="color: #999; font-style: italic;">미채점</span>
                 </td>
                 <td>
-                    <span th:if="${submission.isGraded}"
+                    <span th:if="${submission.isGraded == true}"
                           class="status-badge status-completed">
                         🔒 평가완료
                     </span>
-                    <span th:if="${!submission.isGraded && submission.grade != null}"
+                    <span th:if="${submission.isGraded != true and submission.grade != null}"
                           class="status-badge status-graded">
                         ✅ 채점완료
                     </span>
@@ -371,11 +372,11 @@
                 </td>
                 <td>
                     <!-- 평가 완료된 경우 -->
-                    <span th:if="${submission.isGraded}" class="grade-btn disabled">
+                    <span th:if="${submission.isGraded == true}" class="grade-btn disabled">
                         🔒 평가완료
                     </span>
                     <!-- 평가 완료되지 않은 경우 -->
-                    <a th:unless="${submission.isGraded}"
+                    <a th:unless="${submission.isGraded == true}"
                        th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"
                        th:class="'grade-btn ' + (${submission.grade != null} ? 'modify' : '')">
                         <span th:if="${submission.grade != null}">✏️ 점수 수정</span>
@@ -383,3 +384,9 @@
                     </a>
                 </td>
             </tr>
+            </tbody>
+        </table>
+    </div> <!-- .submissions-section -->
+</div> <!-- .container -->
+</body>
+</html>

@@ -1,5 +1,3 @@
-// src/main/java/kr/ac/kopo/smcmfmf/example/submitservice/domain/Submission.java
-
 package kr.ac.kopo.smcmfmf.example.submitservice.domain;
 
 import jakarta.persistence.*;
@@ -56,6 +54,15 @@ public class Submission {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    // Boolean 타입에 대한 getter 메소드 명시적 정의
+    public Boolean getIsGraded() {
+        return this.isGraded;
+    }
+
+    public void setIsGraded(Boolean isGraded) {
+        this.isGraded = isGraded;
+    }
+
     // 평가 완료 처리 메소드
     public void completeGrading(BigDecimal grade, String feedback) {
         this.grade = grade;
@@ -66,7 +73,7 @@ public class Submission {
 
     // 평가 수정 처리 메소드 (평가 완료 전에만 가능)
     public void updateGrading(BigDecimal grade, String feedback) {
-        if (this.isGraded) {
+        if (Boolean.TRUE.equals(this.isGraded)) {
             throw new IllegalStateException("이미 평가가 완료된 과제는 수정할 수 없습니다.");
         }
         this.grade = grade;
@@ -75,7 +82,7 @@ public class Submission {
 
     // 재제출 처리 메소드 (평가 완료 전에만 가능)
     public void resubmit(String newFileUrl) {
-        if (this.isGraded) {
+        if (Boolean.TRUE.equals(this.isGraded)) {
             throw new IllegalStateException("이미 평가가 완료된 과제는 재제출할 수 없습니다.");
         }
         this.fileUrl = newFileUrl;
@@ -83,4 +90,17 @@ public class Submission {
         this.grade = null;
         this.feedback = null;
     }
-}
+
+    // 편의 메소드들
+    public boolean isGradingCompleted() {
+        return Boolean.TRUE.equals(this.isGraded);
+    }
+
+    public boolean hasGrade() {
+        return this.grade != null;
+    }
+
+    public boolean hasFeedback() {
+        return this.feedback != null && !this.feedback.trim().isEmpty();
+    }
+} /* 과제물을 채점하려하면 오류남 */

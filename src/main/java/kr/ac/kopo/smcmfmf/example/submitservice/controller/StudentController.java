@@ -24,6 +24,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class StudentController {
+
     private final CourseService courseService;
     private final AssignmentService assignmentService;
     private final SubmissionService submissionService;
@@ -81,17 +82,21 @@ public class StudentController {
                              RedirectAttributes redirectAttributes) {
         try {
             Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-            Optional<Submission> existingSubmission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
+            Optional<Submission> existingSubmission =
+                    submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
 
             // 기존 제출물이 있고 평가가 완료된 경우 재제출 불가
             if (existingSubmission.isPresent() && existingSubmission.get().getIsGraded()) {
-                redirectAttributes.addFlashAttribute("error",
-                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다.");
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다."
+                );
                 return "redirect:/student/assignment/" + assignmentId + "/my-submission";
             }
 
             model.addAttribute("assignment", assignment);
-            existingSubmission.ifPresent(submission -> model.addAttribute("existingSubmission", submission));
+            existingSubmission.ifPresent(submission ->
+                    model.addAttribute("existingSubmission", submission));
 
             // 재제출 가능 여부 추가
             boolean canResubmit = submissionService.canResubmit(assignment, student);
@@ -124,8 +129,10 @@ public class StudentController {
 
             // 재제출 가능 여부 확인
             if (!submissionService.canResubmit(assignment, student)) {
-                redirectAttributes.addFlashAttribute("error",
-                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다.");
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "이미 평가가 완료된 과제입니다. 재제출할 수 없습니다."
+                );
                 return "redirect:/student/assignment/" + assignmentId + "/my-submission";
             }
 
@@ -167,7 +174,8 @@ public class StudentController {
                                    @SessionAttribute("user") User student,
                                    Model model) {
         Assignment assignment = assignmentService.getAssignmentById(assignmentId);
-        Optional<Submission> submission = submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
+        Optional<Submission> submission =
+                submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
 
         model.addAttribute("assignment", assignment);
         submission.ifPresent(s -> {

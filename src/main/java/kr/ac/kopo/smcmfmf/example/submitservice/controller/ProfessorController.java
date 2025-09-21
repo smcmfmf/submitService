@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
@@ -24,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ProfessorController {
+
     private final CourseService courseService;
     private final AssignmentService assignmentService;
     private final SubmissionService submissionService;
@@ -95,12 +98,102 @@ public class ProfessorController {
 
             assignmentService.createAssignment(assignment);
             return "redirect:/professor/course/" + courseId;
+        } catch (IllegalArgumentException e) {
+            log.warn("과제 생성 실패 - 유효성 검사 오류: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("assignment", assignment);
+            model.addAttribute("courseId", courseId);
+            return "professor/assignment_form";
         } catch (Exception e) {
             log.error("과제 생성 중 오류 발생", e);
             model.addAttribute("error", "과제 생성 중 오류가 발생했습니다.");
             model.addAttribute("assignment", assignment);
             model.addAttribute("courseId", courseId);
             return "professor/assignment_form";
+        }
+    }
+
+    // 과제 수정 폼
+    @GetMapping("/assignment/{assignmentId}/edit")
+    public String editAssignmentForm(@PathVariable Long assignmentId, Model model) {
+        Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+        model.addAttribute("assignment", assignment);
+        model.addAttribute("courseId", assignment.getCourse().getCourseId());
+        return "professor/assignment_edit_form";
+    }
+
+    // 과제 수정 처리
+    @PostMapping("/assignment/{assignmentId}/edit")
+    public String updateAssignment(@PathVariable Long assignmentId,
+                                   @ModelAttribute Assignment assignmentForm,
+                                   @RequestParam(value = "attachmentFile", required = false) MultipartFile attachmentFile,
+                                   @SessionAttribute("user") User professor,
+                                   Model model) {
+        try {
+            Assignment existingAssignment = assignmentService.getAssignmentById(assignmentId);
+
+            // 기존 과제 정보 업데이트
+            existingAssignment.setTitle(assignmentForm.getTitle());
+            existingAssignment.setDescription(assignmentForm.getDescription());
+            existingAssignment.setDeadline(assignmentForm.getDeadline());
+
+            // 새 첨부파일이 있는 경우 저장
+            if (attachmentFile != null && !attachmentFile.isEmpty()) {
+                String savedFileName = fileService.saveAssignmentAttachment(
+                        attachmentFile,
+                        professor.getName(),
+                        existingAssignment.getTitle()
+                );
+                String fileUrl = "/files/download/" + savedFileName;
+                existingAssignment.setAttachmentUrl(fileUrl);
+                log.info("과제 첨부파일 업데이트 완료: {}", savedFileName);
+            }
+
+            assignmentService.updateAssignment(existingAssignment);
+            return "redirect:/professor/course/" + existingAssignment.getCourse().getCourseId();
+        } catch (IllegalArgumentException e) {
+            log.warn("과제 수정 실패 - 유효성 검사 오류: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("assignment", assignmentForm);
+            model.addAttribute("courseId", assignmentForm.getCourse().getCourseId());
+            return "professor/assignment_edit_form";
+        } catch (Exception e) {
+            log.error("과제 수정 중 오류 발생", e);
+            model.addAttribute("error", "과제 수정 중 오류가 발생했습니다.");
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            model.addAttribute("assignment", assignment);
+            model.addAttribute("courseId", assignment.getCourse().getCourseId());
+            return "professor/assignment_edit_form";
+        }
+    }
+
+    // 과제 마감일 연장 폼
+    @GetMapping("/assignment/{assignmentId}/extend")
+    public String extendDeadlineForm(@PathVariable Long assignmentId, Model model) {
+        Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+        model.addAttribute("assignment", assignment);
+        return "professor/extend_deadline_form";
+    }
+
+    // 과제 마감일 연장 처리
+    @PostMapping("/assignment/{assignmentId}/extend")
+    public String extendDeadline(@PathVariable Long assignmentId,
+                                 @RequestParam("newDeadline") LocalDateTime newDeadline,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            Assignment assignment = assignmentService.extendDeadline(assignmentId, newDeadline);
+            redirectAttributes.addFlashAttribute("success",
+                    "과제 마감일이 성공적으로 연장되었습니다: " +
+                            newDeadline.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm")));
+            return "redirect:/professor/course/" + assignment.getCourse().getCourseId();
+        } catch (IllegalArgumentException e) {
+            log.warn("마감일 연장 실패: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/professor/assignment/" + assignmentId + "/extend";
+        } catch (Exception e) {
+            log.error("마감일 연장 중 오류 발생", e);
+            redirectAttributes.addFlashAttribute("error", "마감일 연장 중 오류가 발생했습니다.");
+            return "redirect:/professor/assignment/" + assignmentId + "/extend";
         }
     }
 

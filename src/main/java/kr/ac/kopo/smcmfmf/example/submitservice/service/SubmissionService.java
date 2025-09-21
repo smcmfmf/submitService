@@ -52,7 +52,7 @@ public class SubmissionService {
     public Submission updateGradeAndFeedback(Long submissionId, BigDecimal grade, String feedback) {
         Submission submission = getSubmissionById(submissionId);
 
-        if (submission.getIsGraded()) {
+        if (Boolean.TRUE.equals(submission.getIsGraded())) {
             throw new IllegalStateException("이미 평가가 완료된 과제는 수정할 수 없습니다.");
         }
 
@@ -65,7 +65,7 @@ public class SubmissionService {
     public Submission completeGrading(Long submissionId, BigDecimal grade, String feedback) {
         Submission submission = getSubmissionById(submissionId);
 
-        if (submission.getIsGraded()) {
+        if (Boolean.TRUE.equals(submission.getIsGraded())) {
             throw new IllegalStateException("이미 평가가 완료된 과제입니다.");
         }
 
@@ -79,7 +79,7 @@ public class SubmissionService {
     public Submission cancelGradingCompletion(Long submissionId) {
         Submission submission = getSubmissionById(submissionId);
 
-        if (!submission.getIsGraded()) {
+        if (!Boolean.TRUE.equals(submission.getIsGraded())) {
             throw new IllegalStateException("평가 완료되지 않은 과제입니다.");
         }
 
@@ -106,13 +106,13 @@ public class SubmissionService {
     // 평가 가능 여부 확인
     public boolean canModifyGrade(Long submissionId) {
         Submission submission = getSubmissionById(submissionId);
-        return !submission.getIsGraded();
+        return !Boolean.TRUE.equals(submission.getIsGraded());
     }
 
     // 재제출 가능 여부 확인
     public boolean canResubmit(Assignment assignment, User student) {
         Optional<Submission> submission = getSubmissionByAssignmentAndStudent(assignment, student);
-        return submission.isEmpty() || !submission.get().getIsGraded();
+        return submission.isEmpty() || !Boolean.TRUE.equals(submission.get().getIsGraded());
     }
 
     @Deprecated

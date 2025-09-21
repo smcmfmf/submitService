@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마감일 연장 - 과제 제출 시스템</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header-nav {
+            float: right;
+            margin-top: 5px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .assignment-info {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #2196F3;
+        }
+        .assignment-info h3 {
+            margin: 0 0 20px 0;
+            color: #1976D2;
+            font-size: 1.4em;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #666;
+            font-size: 1em;
+        }
+        .current-deadline {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+        .extend-form {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .extend-form h3 {
+            margin: 0 0 25px 0;
+            color: #333;
+            font-size: 1.4em;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        input[type="datetime-local"].error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+        .deadline-validation-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+        .deadline-validation-error.show {
+            display: block;
+        }
+        .warning-box {
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .warning-box h4 {
+            margin: 0 0 10px 0;
+            color: #e65100;
+            font-size: 1.1em;
+        }
+        .warning-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .warning-box li {
+            margin: 5px 0;
+            color: #bf360c;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-extend {
+            background-color: #ff9800;
+            color: white;
+        }
+        .btn-extend:hover:not(:disabled) {
+            background-color: #f57c00;
+            transform: translateY(-1px);
+        }
+        .btn-extend:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background-color: #545b62;
+        }
+        .help-text {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #17a2b8;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<div class="header clearfix">
+    <h1>📅 마감일 연장</h1>
+    <div class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}">🔙 과제 목록</a>
+        <a href="/professor/dashboard">🏠 대시보드</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 성공/에러 메시지 -->
+    <div th:if="${success}" class="alert alert-success">
+        <strong>✅ 성공:</strong> <span th:text="${success}">성공 메시지</span>
+    </div>
+    <div th:if="${error}" class="alert alert-error">
+        <strong>⚠️ 오류:</strong> <span th:text="${error}">오류 메시지</span>
+    </div>
+
+    <div class="assignment-info">
+        <h3>📋 과제 정보</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">📚 과제명</div>
+                <div class="info-value" th:text="${assignment.title}">과제명</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">📖 과목명</div>
+                <div class="info-value" th:text="${assignment.course.name}">과목명</div>
+            </div>
+        </div>
+
+        <div class="current-deadline">
+            ⏰ 현재 마감일: <span th:text="${#temporals.format(assignment.deadline, 'yyyy년 MM월 dd일 HH:mm')}">현재 마감일</span>
+        </div>
+    </div>
+
+    <div class="extend-form">
+        <h3>📅 새로운 마감일 설정</h3>
+
+        <div class="warning-box">
+            <h4>⚠️ 마감일 연장 주의사항</h4>
+            <ul>
+                <li>새로운 마감일은 <strong>현재 마감일보다 이후</strong>로만 설정 가능합니다</li>
+                <li>마감일 연장은 이미 제출한 학생들에게도 영향을 줍니다</li>
+                <li>학생들에게 마감일 변경 사실을 별도로 공지하는 것을 권장합니다</li>
+                <li>마감일 연장 후에는 되돌릴 수 없습니다</li>
+            </ul>
+        </div>
+
+        <div class="help-text">
+            💡 <strong>권장사항:</strong> 학생들이 충분히 준비할 수 있도록 적절한 기간을 연장해주세요. 일반적으로 1-7일 정도 연장하는 것이 적절합니다.
+        </div>
+
+        <form th:action="@{/professor/assignment/{id}/extend(id=${assignment.assignmentId})}" method="post" id="extendForm">
+            <div class="form-group">
+                <label for="newDeadline">📅 새로운 마감일 <span style="color: #e74c3c;">*</span></label>
+                <input type="datetime-local" id="newDeadline" name="newDeadline" required>
+
+                <!-- 마감일 검증 에러 메시지 -->
+                <div id="deadlineError" class="deadline-validation-error">
+                    ⚠️ 새로운 마감일은 현재 마감일보다 이후로 설정해야 합니다.
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-extend" id="submitBtn">
+                    ⏰ 마감일 연장하기
+                </button>
+                <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}" class="btn btn-cancel">
+                    ❌ 취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const newDeadlineInput = document.getElementById('newDeadline');
+        const deadlineError = document.getElementById('deadlineError');
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('extendForm');
+
+        // 현재 마감일을 JavaScript 변수로 가져오기
+        const currentDeadlineStr = /*[[${#temporals.format(assignment.deadline, 'yyyy-MM-dd\'T\'HH:mm')}]]*/ '';
+        const currentDeadline = new Date(currentDeadlineStr);
+
+        // 현재 시간을 ISO 문자열로 가져오기
+        function getCurrentDateTime() {
+            const now = new Date();
+            return now.toISOString().slice(0, 16);
+        }
+
+        // 최소 날짜를 현재 마감일로 설정
+        function setMinDateTime() {
+            const minDateTime = currentDeadline.toISOString().slice(0, 16);
+            newDeadlineInput.setAttribute('min', minDateTime);
+        }
+
+        // 기본값으로 현재 마감일 + 3일 설정
+        function setDefaultDeadline() {
+            const defaultTime = new Date(currentDeadline);
+            defaultTime.setDate(defaultTime.getDate() + 3);
+            newDeadlineInput.value = defaultTime.toISOString().slice(0, 16);
+        }
+
+        // 마감일 검증 함수
+        function validateDeadline() {
+            const selectedDateTime = new Date(newDeadlineInput.value);
+
+            if (selectedDateTime <= currentDeadline) {
+                newDeadlineInput.classList.add('error');
+                deadlineError.classList.add('show');
+                submitBtn.disabled = true;
+                return false;
+            } else {
+                newDeadlineInput.classList.remove('error');
+                deadlineError.classList.remove('show');
+                submitBtn.disabled = false;
+                return true;
+            }
+        }
+
+        // 연장 기간 계산 및 표시
+        function showExtensionInfo() {
+            const selectedDateTime = new Date(newDeadlineInput.value);
+            const timeDiff = selectedDateTime - currentDeadline;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            const hoursDiff = Math.ceil(timeDiff / (1000 * 60 * 60)) % 24;
+
+            // 기존 정보 제거
+            const existingInfo = document.getElementById('extensionInfo');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+
+            if (selectedDateTime > currentDeadline) {
+                const infoDiv = document.createElement('div');
+                infoDiv.id = 'extensionInfo';
+                infoDiv.style.cssText = 'background-color: #e8f5e8; padding: 10px; border-radius: 6px; margin-top: 10px; color: #2e7d32; font-weight: bold; text-align: center;';
+
+                let extensionText = '';
+                if (daysDiff > 0) {
+                    extensionText = `📈 ${daysDiff}일 ${hoursDiff}시간 연장`;
+                } else {
+                    extensionText = `📈 ${Math.ceil(timeDiff / (1000 * 60 * 60))}시간 연장`;
+                }
+
+                infoDiv.textContent = extensionText;
+                newDeadlineInput.parentNode.appendChild(infoDiv);
+            }
+        }
+
+        // 초기화
+        setMinDateTime();
+        setDefaultDeadline();
+        validateDeadline();
+        showExtensionInfo();
+
+        // 마감일 입력 시 실시간 검증
+        newDeadlineInput.addEventListener('change', function() {
+            validateDeadline();
+            showExtensionInfo();
+        });
+
+        newDeadlineInput.addEventListener('input', function() {
+            validateDeadline();
+            showExtensionInfo();
+        });
+
+        // 폼 제출 시 최종 검증
+        form.addEventListener('submit', function(e) {
+            if (!validateDeadline()) {
+                e.preventDefault();
+                alert('새로운 마감일은 현재 마감일보다 이후로 설정해야 합니다.');
+                newDeadlineInput.focus();
+                return false;
+            }
+
+            const selectedDateTime = new Date(newDeadlineInput.value);
+            const timeDiff = selectedDateTime - currentDeadline;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+            // 확인 메시지
+            const confirmed = confirm(
+                `마감일을 ${daysDiff}일 연장하시겠습니까?\n\n` +
+                `현재 마감일: ${currentDeadline.toLocaleString('ko-KR')}\n` +
+                `새 마감일: ${selectedDateTime.toLocaleString('ko-KR')}\n\n` +
+                '⚠️ 주의: 이 작업은 되돌릴 수 없습니다.'
+            );
+
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // 페이지 로드 시 초기 검증
+        if (newDeadlineInput.value) {
+            validateDeadline();
+            showExtensionInfo();
+        }
+    });
+</script>
+</body>
+</html>
+backgroun

@@ -240,12 +240,12 @@
     </div>
 
     <!-- 평가 완료된 과제인 경우 경고 -->
-    <div th:if="${existingSubmission && existingSubmission.isGraded}" class="graded-warning">
+    <div th:if="${existingSubmission != null and existingSubmission.isGraded}" class="graded-warning">
         <div class="icon">🔒</div>
         <h3>평가가 완료된 과제입니다</h3>
         <p>이 과제는 이미 교수님의 평가가 완료되어 더 이상 재제출할 수 없습니다.</p>
-        <p><strong>평가 완료일:</strong> <span th:text="${#temporals.format(existingSubmission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">완료일</span></p>
-        <p><strong>받은 점수:</strong> <span th:text="${existingSubmission.grade}">점수</span>점 / 100점</p>
+        <p th:if="${existingSubmission.gradedAt}"><strong>평가 완료일:</strong> <span th:text="${#temporals.format(existingSubmission.gradedAt, 'yyyy년 MM월 dd일 HH:mm')}">완료일</span></p>
+        <p th:if="${existingSubmission.grade}"><strong>받은 점수:</strong> <span th:text="${existingSubmission.grade}">점수</span>점 / 100점</p>
 
         <a th:href="@{/student/assignment/{id}/my-submission(id=${assignment.assignmentId})}" class="view-submission-btn">
             📋 내 제출물 상세보기
@@ -255,9 +255,9 @@
     </div>
 
     <!-- 평가 완료되지 않은 경우에만 제출 폼 표시 -->
-    <div th:unless="${existingSubmission && existingSubmission.isGraded}">
+    <div th:if="${existingSubmission == null or !existingSubmission.isGraded}">
         <!-- 기존 제출물이 있는 경우 경고 (평가 완료되지 않음) -->
-        <div th:if="${existingSubmission && !existingSubmission.isGraded}" class="existing-submission">
+        <div th:if="${existingSubmission != null and !existingSubmission.isGraded}" class="existing-submission">
             <strong>⚠️ 재제출 안내</strong>
             <p>이미 제출한 과제가 있습니다. 다시 제출하면 기존 제출물이 대체됩니다.</p>
             <p><strong>기존 제출 시간:</strong> <span th:text="${#temporals.format(existingSubmission.submittedAt, 'yyyy년 MM월 dd일 HH:mm')}">제출시간</span></p>
@@ -266,7 +266,7 @@
             </p>
         </div>
 
-        <div class="form-help" th:unless="${existingSubmission && existingSubmission.isGraded}">
+        <div class="form-help" th:if="${existingSubmission == null or !existingSubmission.isGraded}">
             <h4>📋 제출 안내</h4>
             <ul>
                 <li>허용되는 파일 형식을 확인해주세요</li>
@@ -278,26 +278,26 @@
         </div>
 
         <form th:action="@{/student/assignment/{assignmentId}/submit(assignmentId=${assignment.assignmentId})}"
-              method="post" enctype="multipart/form-data" th:unless="${existingSubmission && existingSubmission.isGraded}">
+              method="post" enctype="multipart/form-data" th:if="${existingSubmission == null or !existingSubmission.isGraded}">
 
             <div class="form-group">
                 <label for="file">📁 제출할 파일 선택 <span style="color: #e74c3c;">*</span></label>
                 <input type="file" id="file" name="file" required
-                       th:disabled="${existingSubmission && existingSubmission.isGraded}">
+                       th:disabled="${existingSubmission != null and existingSubmission.isGraded}">
                 <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
                     파일을 선택하여 과제를 제출하세요.
                 </small>
             </div>
 
-            <button type="submit" th:disabled="${existingSubmission && existingSubmission.isGraded}">
-                <span th:if="${existingSubmission && !existingSubmission.isGraded}">🔄 과제 재제출하기</span>
-                <span th:unless="${existingSubmission}">✅ 과제 제출하기</span>
+            <button type="submit" th:disabled="${existingSubmission != null and existingSubmission.isGraded}">
+                <span th:if="${existingSubmission != null and !existingSubmission.isGraded}">🔄 과제 재제출하기</span>
+                <span th:unless="${existingSubmission != null}">✅ 과제 제출하기</span>
             </button>
         </form>
 
         <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}"
            class="cancel-link"
-           th:unless="${existingSubmission && existingSubmission.isGraded}">취소</a>
+           th:if="${existingSubmission == null or !existingSubmission.isGraded}">취소</a>
     </div>
 </div>
 
@@ -325,4 +325,4 @@
     });
 </script>
 </body>
-</html>s
+</html>

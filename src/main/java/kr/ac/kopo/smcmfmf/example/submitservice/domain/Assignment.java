@@ -1,14 +1,23 @@
+// src/main/java/kr/ac/kopo/smcmfmf/example/submitservice/domain/Assignment.java
+
 package kr.ac.kopo.smcmfmf.example.submitservice.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "assignments")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,16 +30,19 @@ public class Assignment {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Lob  // TEXT 타입에 대응
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
     private LocalDateTime deadline;
 
-    @Column(length = 255)  // attachment_url 컬럼명과 길이 일치
+    @Column(length = 500)
     private String attachmentUrl;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

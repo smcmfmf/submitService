@@ -98,6 +98,10 @@
             border-color: #4CAF50;
             background-color: #f0f8f0;
         }
+        input[type="datetime-local"].error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
         .file-help {
             background-color: #e3f2fd;
             padding: 15px;
@@ -118,6 +122,40 @@
             margin: 5px 0;
             font-size: 14px;
             color: #666;
+        }
+        .deadline-help {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid #bee5eb;
+        }
+        .deadline-help h4 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+            font-size: 1em;
+        }
+        .deadline-help ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .deadline-help li {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #0c5460;
+        }
+        .deadline-validation-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin-top: 10px;
+            font-size: 14px;
+            display: none;
+        }
+        .deadline-validation-error.show {
+            display: block;
         }
         .form-buttons {
             display: flex;
@@ -141,9 +179,14 @@
             background-color: #4CAF50;
             color: white;
         }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: #45a049;
             transform: translateY(-2px);
+        }
+        .btn-primary:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
         }
         .btn-secondary {
             background-color: #6c757d;
@@ -191,7 +234,7 @@
         </div>
 
         <form th:action="@{/professor/course/{courseId}/assignment/new(courseId=${courseId})}"
-              th:object="${assignment}" method="post" enctype="multipart/form-data">
+              th:object="${assignment}" method="post" enctype="multipart/form-data" id="assignmentForm">
 
             <div class="form-group">
                 <label for="title">📋 과제 제목 <span class="required">*</span></label>
@@ -211,6 +254,22 @@
                 <label for="deadline">📅 마감일 <span class="required">*</span></label>
                 <input type="datetime-local" id="deadline" th:field="*{deadline}" required>
                 <div class="form-help-text">학생들이 충분한 시간을 가질 수 있도록 적절한 마감일을 설정해주세요.</div>
+
+                <!-- 마감일 검증 에러 메시지 -->
+                <div id="deadlineError" class="deadline-validation-error">
+                    ⚠️ 마감일은 현재 시간 이후로 설정해야 합니다.
+                </div>
+
+                <!-- 마감일 설정 도움말 -->
+                <div class="deadline-help">
+                    <h4>📝 마감일 설정 가이드</h4>
+                    <ul>
+                        <li>마감일은 <strong>현재 시간 이후</strong>로만 설정 가능합니다</li>
+                        <li>학생들이 충분히 준비할 수 있는 시간을 확보해주세요</li>
+                        <li>일반적으로 과제 공지 후 <strong>최소 3-7일</strong> 여유를 두는 것을 권장합니다</li>
+                        <li>주말이나 공휴일을 고려하여 설정하세요</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="form-group">
@@ -230,11 +289,105 @@
             </div>
 
             <div class="form-buttons">
-                <button type="submit" class="btn btn-primary">✅ 과제 생성하기</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">✅ 과제 생성하기</button>
                 <a th:href="@{/professor/course/{id}(id=${courseId})}" class="btn btn-secondary">취소</a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deadlineInput = document.getElementById('deadline');
+        const deadlineError = document.getElementById('deadlineError');
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('assignmentForm');
+
+        // 현재 시간을 ISO 문자열로 가져오기
+        function getCurrentDateTime() {
+            const now = new Date();
+            return now.toISOString().slice(0, 16);
+        }
+
+        // 최소 날짜를 현재 시간으로 설정
+        function setMinDateTime() {
+            const minDateTime = getCurrentDateTime();
+            deadlineInput.setAttribute('min', minDateTime);
+        }
+
+        // 기본값으로 현재 시간 + 7일 설정
+        function setDefaultDeadline() {
+            if (!deadlineInput.value) {
+                const defaultTime = new Date();
+                defaultTime.setDate(defaultTime.getDate() + 7);
+                defaultTime.setHours(23, 59);
+
+                deadlineInput.value = defaultTime.toISOString().slice(0, 16);
+            }
+        }
+
+        // 마감일 검증 함수
+        function validateDeadline() {
+            const selectedDateTime = new Date(deadlineInput.value);
+            const currentDateTime = new Date();
+
+            if (selectedDateTime <= currentDateTime) {
+                deadlineInput.classList.add('error');
+                deadlineError.classList.add('show');
+                submitBtn.disabled = true;
+                return false;
+            } else {
+                deadlineInput.classList.remove('error');
+                deadlineError.classList.remove('show');
+                submitBtn.disabled = false;
+                return true;
+            }
+        }
+
+        // 초기화
+        setMinDateTime();
+        setDefaultDeadline();
+
+        // 마감일 입력 시 실시간 검증
+        deadlineInput.addEventListener('change', validateDeadline);
+        deadlineInput.addEventListener('input', validateDeadline);
+
+        // 폼 제출 시 최종 검증
+        form.addEventListener('submit', function(e) {
+            if (!validateDeadline()) {
+                e.preventDefault();
+                alert('마감일은 현재 시간 이후로 설정해야 합니다.');
+                deadlineInput.focus();
+                return false;
+            }
+
+            // 추가 확인 메시지
+            const selectedDateTime = new Date(deadlineInput.value);
+            const currentDateTime = new Date();
+            const timeDiff = selectedDateTime - currentDateTime;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+            if (daysDiff < 1) {
+                const confirmed = confirm(
+                    '마감일이 24시간 이내로 설정되었습니다.\n' +
+                    '학생들에게 충분한 시간이 주어지지 않을 수 있습니다.\n\n' +
+                    '그래도 계속하시겠습니까?'
+                );
+                if (!confirmed) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        // 페이지 로드 시 초기 검증
+        if (deadlineInput.value) {
+            validateDeadline();
+        }
+
+        // 1분마다 최소 시간 업데이트 (선택사항)
+        setInterval(setMinDateTime, 60000);
+    });
+</script>
 </body>
 </html>
