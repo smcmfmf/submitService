@@ -82,8 +82,10 @@ public class UserService {
     public User approveUser(Long userId, User admin, String reason) {
         User user = findById(userId);
 
-        if (!User.AccountStatus.PENDING.equals(user.getAccountStatus())) {
-            throw new IllegalStateException("승인 대기 상태가 아닌 사용자입니다.");
+        // PENDING 또는 REJECTED 상태인 사용자만 승인 가능
+        if (!User.AccountStatus.PENDING.equals(user.getAccountStatus()) &&
+                !User.AccountStatus.REJECTED.equals(user.getAccountStatus())) {
+            throw new IllegalStateException("승인 대기 또는 거부 상태가 아닌 사용자입니다.");
         }
 
         user.approve(admin, reason);
@@ -122,6 +124,20 @@ public class UserService {
         User user = findById(userId);
         user.approve(admin, reason); // 다시 승인 상태로 변경
         log.info("사용자 재활성화: {} by {}", user.getEmail(), admin.getEmail());
+        return userRepository.save(user);
+    }
+
+    // 거부된 사용자를 다시 승인하는 메서드 (새로 추가)
+    @Transactional
+    public User reapproveRejectedUser(Long userId, User admin, String reason) {
+        User user = findById(userId);
+
+        if (!User.AccountStatus.REJECTED.equals(user.getAccountStatus())) {
+            throw new IllegalStateException("거부 상태가 아닌 사용자입니다.");
+        }
+
+        user.approve(admin, reason);
+        log.info("거부된 사용자 재승인: {} by {}", user.getEmail(), admin.getEmail());
         return userRepository.save(user);
     }
 

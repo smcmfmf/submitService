@@ -15,7 +15,9 @@
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .header h1 { margin: 0; }
+        .header h1 {
+            margin: 0;
+        }
         .container {
             max-width: 800px;
             margin: 30px auto;
@@ -61,10 +63,22 @@
             font-weight: bold;
             font-size: 0.9em;
         }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-approved { background-color: #d4edda; color: #155724; }
-        .status-rejected { background-color: #f8d7da; color: #721c24; }
-        .status-suspended { background-color: #d1ecf1; color: #0c5460; }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-suspended {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
         .role-badge {
             padding: 6px 12px;
             border-radius: 15px;
@@ -72,9 +86,18 @@
             font-weight: bold;
             margin-left: 10px;
         }
-        .role-student { background-color: #3498db; color: white; }
-        .role-professor { background-color: #e74c3c; color: white; }
-        .role-admin { background-color: #9b59b6; color: white; }
+        .role-student {
+            background-color: #3498db;
+            color: white;
+        }
+        .role-professor {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .role-admin {
+            background-color: #9b59b6;
+            color: white;
+        }
         .detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -124,6 +147,12 @@
             margin: 0 0 10px 0;
             color: #555;
         }
+        .action-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
         .btn {
             padding: 10px 20px;
             text-decoration: none;
@@ -135,12 +164,28 @@
             display: inline-block;
             margin-right: 10px;
             margin-bottom: 5px;
+            width: fit-content;
         }
-        .btn-success { background-color: #27ae60; color: white; }
-        .btn-danger { background-color: #e74c3c; color: white; }
-        .btn-warning { background-color: #f39c12; color: white; }
-        .btn-secondary { background-color: #95a5a6; color: white; }
-        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
         .reason-input {
             width: 100%;
             padding: 8px 12px;
@@ -164,19 +209,6 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
-        .history-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        .history-item {
-            padding: 10px;
-            border-left: 3px solid #3498db;
-            margin-bottom: 10px;
-            background-color: #f8f9fa;
-        }
         @media (max-width: 768px) {
             .detail-grid {
                 grid-template-columns: 1fr;
@@ -187,11 +219,14 @@
                 align-items: flex-start;
                 gap: 15px;
             }
+            .action-form {
+                width: 100%;
+            }
         }
     </style>
     <script>
         function confirmAction(action, userName) {
-            return confirm(`정말로 ${userName} 사용자를 ${action}하시겠습니까?`);
+            return confirm('정말로 ' + userName + ' 사용자를 ' + action + '하시겠습니까?');
         }
     </script>
 </head>
@@ -211,14 +246,10 @@
             <div class="user-info">
                 <h2 th:text="${viewUser.name}">사용자명</h2>
                 <div class="user-email" th:text="${viewUser.email}">이메일</div>
-                <span class="role-badge"
-                      th:class="'role-badge role-' + ${#strings.toLowerCase(viewUser.role)}"
-                      th:text="${viewUser.role.displayName}">역할</span>
+                <span class="role-badge" th:text="${viewUser.role.displayName}">역할</span>
             </div>
             <div>
-                    <span class="status-badge"
-                          th:class="'status-badge status-' + ${#strings.toLowerCase(viewUser.accountStatus)}"
-                          th:text="${viewUser.accountStatus.displayName}">상태</span>
+                <span class="status-badge" th:text="${viewUser.accountStatus.displayName}">상태</span>
             </div>
         </div>
 
@@ -277,19 +308,31 @@
         <!-- 승인 대기 중인 사용자 -->
         <div th:if="${viewUser.accountStatus.name() == 'PENDING'}" class="action-group">
             <h4>승인/거부</h4>
-            <form th:action="@{/admin/users/{id}/approve(id=${viewUser.id})}" method="post" style="display: inline;">
-                <input type="text" name="reason" placeholder="승인 사유 (선택)" class="reason-input">
-                <button type="submit" class="btn btn-success"
-                        th:onclick="'return confirmAction(\'승인\', \'' + ${viewUser.name} + '\')'">
+            <form th:action="@{/admin/users/{id}/approve(id=${viewUser.id})}" method="post" class="action-form">
+                <input type="text" name="reason" placeholder="승인 사유 (선택)" class="reason-input"/>
+                <button type="submit" class="btn btn-success" th:onclick="'return confirmAction(\'승인\', \'' + ${viewUser.name} + '\')'">
                     ✅ 승인
                 </button>
             </form>
-            <br>
-            <form th:action="@{/admin/users/{id}/reject(id=${viewUser.id})}" method="post" style="display: inline;">
-                <input type="text" name="reason" placeholder="거부 사유 (필수)" class="reason-input" required>
-                <button type="submit" class="btn btn-danger"
-                        th:onclick="'return confirmAction(\'거부\', \'' + ${viewUser.name} + '\')'">
+
+            <form th:action="@{/admin/users/{id}/reject(id=${viewUser.id})}" method="post" class="action-form">
+                <input type="text" name="reason" placeholder="거부 사유 (필수)" class="reason-input" required="required"/>
+                <button type="submit" class="btn btn-danger" th:onclick="'return confirmAction(\'거부\', \'' + ${viewUser.name} + '\')'">
                     ❌ 거부
+                </button>
+            </form>
+        </div>
+
+        <!-- 거부된 사용자 재승인 -->
+        <div th:if="${viewUser.accountStatus.name() == 'REJECTED'}" class="action-group">
+            <h4>거부된 사용자 재승인</h4>
+            <p style="color: #dc3545; margin-bottom: 15px;">
+                <strong>거부 사유:</strong> <span th:text="${viewUser.statusReason ?: '사유 없음'}"></span>
+            </p>
+            <form th:action="@{/admin/users/{id}/approve(id=${viewUser.id})}" method="post" class="action-form">
+                <input type="text" name="reason" placeholder="재승인 사유 (예: 실수로 거부됨)" class="reason-input"/>
+                <button type="submit" class="btn btn-success" th:onclick="'return confirmAction(\'재승인\', \'' + ${viewUser.name} + '\')'">
+                    ✅ 다시 승인
                 </button>
             </form>
         </div>
@@ -297,10 +340,9 @@
         <!-- 승인된 사용자 -->
         <div th:if="${viewUser.accountStatus.name() == 'APPROVED'}" class="action-group">
             <h4>계정 정지</h4>
-            <form th:action="@{/admin/users/{id}/suspend(id=${viewUser.id})}" method="post" style="display: inline;">
-                <input type="text" name="reason" placeholder="정지 사유 (필수)" class="reason-input" required>
-                <button type="submit" class="btn btn-warning"
-                        th:onclick="'return confirmAction(\'정지\', \'' + ${viewUser.name} + '\')'">
+            <form th:action="@{/admin/users/{id}/suspend(id=${viewUser.id})}" method="post" class="action-form">
+                <input type="text" name="reason" placeholder="정지 사유 (필수)" class="reason-input" required="required"/>
+                <button type="submit" class="btn btn-warning" th:onclick="'return confirmAction(\'정지\', \'' + ${viewUser.name} + '\')'">
                     ⏸️ 계정 정지
                 </button>
             </form>
@@ -309,10 +351,9 @@
         <!-- 정지된 사용자 -->
         <div th:if="${viewUser.accountStatus.name() == 'SUSPENDED'}" class="action-group">
             <h4>계정 재활성화</h4>
-            <form th:action="@{/admin/users/{id}/reactivate(id=${viewUser.id})}" method="post" style="display: inline;">
-                <input type="text" name="reason" placeholder="재활성화 사유 (선택)" class="reason-input">
-                <button type="submit" class="btn btn-success"
-                        th:onclick="'return confirmAction(\'재활성화\', \'' + ${viewUser.name} + '\')'">
+            <form th:action="@{/admin/users/{id}/reactivate(id=${viewUser.id})}" method="post" class="action-form">
+                <input type="text" name="reason" placeholder="재활성화 사유 (선택)" class="reason-input"/>
+                <button type="submit" class="btn btn-success" th:onclick="'return confirmAction(\'재활성화\', \'' + ${viewUser.name} + '\')'">
                     🔄 계정 재활성화
                 </button>
             </form>

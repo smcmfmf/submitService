@@ -15,7 +15,9 @@
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .header h1 { margin: 0; }
+        .header h1 {
+            margin: 0;
+        }
         .container {
             max-width: 1200px;
             margin: 30px auto;
@@ -95,19 +97,40 @@
             font-size: 0.8em;
             font-weight: bold;
         }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-approved { background-color: #d4edda; color: #155724; }
-        .status-rejected { background-color: #f8d7da; color: #721c24; }
-        .status-suspended { background-color: #d1ecf1; color: #0c5460; }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-suspended {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
         .role-badge {
             padding: 4px 8px;
             border-radius: 12px;
             font-size: 0.8em;
             font-weight: bold;
         }
-        .role-student { background-color: #3498db; color: white; }
-        .role-professor { background-color: #e74c3c; color: white; }
-        .role-admin { background-color: #9b59b6; color: white; }
+        .role-student {
+            background-color: #3498db;
+            color: white;
+        }
+        .role-professor {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .role-admin {
+            background-color: #9b59b6;
+            color: white;
+        }
         .btn {
             padding: 6px 12px;
             text-decoration: none;
@@ -116,10 +139,22 @@
             margin: 2px;
             display: inline-block;
         }
-        .btn-primary { background-color: #3498db; color: white; }
-        .btn-success { background-color: #27ae60; color: white; }
-        .btn-warning { background-color: #f39c12; color: white; }
-        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
         .pagination {
             display: flex;
             justify-content: center;
@@ -171,20 +206,14 @@
                     <label class="filter-label">계정 상태</label>
                     <select name="status" class="filter-select">
                         <option value="ALL">전체</option>
-                        <option th:each="status : ${statuses}"
-                                th:value="${status}"
-                                th:text="${status.displayName}"
-                                th:selected="${status.name() == currentStatus}">상태</option>
+                        <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.displayName}" th:selected="${status.name() == currentStatus}">상태</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label class="filter-label">역할</label>
                     <select name="role" class="filter-select">
                         <option value="ALL">전체</option>
-                        <option th:each="role : ${roles}"
-                                th:value="${role}"
-                                th:text="${role.displayName}"
-                                th:selected="${role.name() == currentRole}">역할</option>
+                        <option th:each="role : ${roles}" th:value="${role}" th:text="${role.displayName}" th:selected="${role.name() == currentRole}">역할</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-filter">🔍 필터 적용</button>
@@ -213,14 +242,10 @@
                     <td th:text="${user.name}">사용자명</td>
                     <td th:text="${user.email}">이메일</td>
                     <td>
-                                <span class="role-badge"
-                                      th:class="'role-badge role-' + ${#strings.toLowerCase(user.role)}"
-                                      th:text="${user.role.displayName}">역할</span>
+                        <span class="role-badge" th:text="${user.role.displayName}">역할</span>
                     </td>
                     <td>
-                                <span class="status-badge"
-                                      th:class="'status-badge status-' + ${#strings.toLowerCase(user.accountStatus)}"
-                                      th:text="${user.accountStatus.displayName}">상태</span>
+                        <span class="status-badge" th:text="${user.accountStatus.displayName}">상태</span>
                     </td>
                     <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}">가입일</td>
                     <td>
@@ -228,8 +253,8 @@
                             👁️ 상세
                         </a>
                         <span th:if="${user.accountStatus.name() == 'PENDING'}">
-                                    <a th:href="@{/admin/users/pending}" class="btn btn-warning">승인</a>
-                                </span>
+                            <a th:href="@{/admin/users/pending}" class="btn btn-warning">승인</a>
+                        </span>
                     </td>
                 </tr>
                 </tbody>
@@ -237,18 +262,14 @@
 
             <!-- 페이지네이션 -->
             <div class="pagination" th:if="${users.totalPages > 1}">
-                <a th:if="${users.hasPrevious()}"
-                   th:href="@{/admin/users(page=${users.number - 1}, status=${currentStatus}, role=${currentRole})}">이전</a>
+                <a th:if="${users.hasPrevious()}" th:href="@{/admin/users(page=${users.number - 1}, status=${currentStatus}, role=${currentRole})}">이전</a>
 
                 <span th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}">
-                        <a th:if="${i != users.number}"
-                           th:href="@{/admin/users(page=${i}, status=${currentStatus}, role=${currentRole})}"
-                           th:text="${i + 1}">1</a>
-                        <span th:if="${i == users.number}" class="current" th:text="${i + 1}">1</span>
-                    </span>
+                    <a th:if="${i != users.number}" th:href="@{/admin/users(page=${i}, status=${currentStatus}, role=${currentRole})}" th:text="${i + 1}">1</a>
+                    <span th:if="${i == users.number}" class="current" th:text="${i + 1}">1</span>
+                </span>
 
-                <a th:if="${users.hasNext()}"
-                   th:href="@{/admin/users(page=${users.number + 1}, status=${currentStatus}, role=${currentRole})}">다음</a>
+                <a th:if="${users.hasNext()}" th:href="@{/admin/users(page=${users.number + 1}, status=${currentStatus}, role=${currentRole})}">다음</a>
             </div>
         </div>
 

@@ -125,6 +125,21 @@
         .nav-menu a:hover {
             background-color: #ecf0f1;
         }
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -138,10 +153,15 @@
 </div>
 
 <div class="container">
+    <!-- 성공/오류 메시지 -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
     <!-- 네비게이션 메뉴 -->
     <div class="nav-menu">
         <a href="/admin/dashboard">📊 대시보드</a>
         <a href="/admin/users/pending">⏳ 승인 대기</a>
+        <a href="/admin/users/rejected">❌ 거부된 사용자</a>
         <a href="/admin/users">👥 전체 사용자</a>
     </div>
 
@@ -170,6 +190,9 @@
         <h2>📋 빠른 작업</h2>
         <a href="/admin/users/pending" class="btn btn-warning">
             ⏳ 승인 대기 목록 (<span th:text="${pendingCount}">0</span>)
+        </a>
+        <a href="/admin/users/rejected" class="btn btn-danger">
+            ❌ 거부된 사용자 (<span th:text="${rejectedCount}">0</span>)
         </a>
         <a href="/admin/users" class="btn btn-primary">
             👥 전체 사용자 관리
