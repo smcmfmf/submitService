@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>과제 삭제 확인</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            display: inline-block;
+        }
+        .header-nav {
+            float: right;
+            margin-top: 5px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background-color: #e9f5ff;
+            color: #31708f;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+            border: none;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="header clearfix">
+    <h1>⚠️ 과제 삭제 확인</h1>
+    <div class="header-nav">
+        <a href="/professor/course/new">➕ 새 과목 만들기</a>
+        <a href="/logout">🚪 로그아웃</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>⚠️ 과제 삭제 확인</h2>
+
+        <div class="alert alert-info">
+            <strong>안내:</strong> 과제를 삭제하면 <b>모든 학생들의 제출물도 함께 삭제</b>됩니다.
+        </div>
+
+        <h3 th:text="${assignment.title}">과제 제목</h3>
+        <p th:text="${assignment.description}">과제 설명</p>
+
+        <p><b>과목:</b> <span th:text="${assignment.course.name}"></span></p>
+        <p><b>마감일:</b> <span th:text="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}"></span></p>
+        <p><b>제출물 수:</b> <span th:text="${submissionCount}">0</span></p>
+
+        <div th:if="${submissionCount > 0}" class="alert alert-warning">
+            ⚠️ 현재 <b th:text="${submissionCount}"></b>개의 제출물이 있습니다.
+            삭제 시 <b class="text-danger">영구적으로 삭제</b>됩니다.
+        </div>
+        <div th:if="${submissionCount == 0}" class="alert alert-success">
+            ✅ 제출물이 없어 안전하게 삭제할 수 있습니다.
+        </div>
+
+        <hr>
+
+        <div class="text-center">
+            <p class="lead">정말로 '<b th:text="${assignment.title}"></b>' 과제를 삭제하시겠습니까?</p>
+
+            <form th:action="@{/professor/assignment/{id}/delete(id=${assignment.assignmentId})}"
+                  method="post"
+                  style="display:inline-block;"
+                  onsubmit="return confirmAssignmentDelete();">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf}"/>
+                <button type="submit" class="btn btn-warning">
+                    🗑️ 삭제하기
+                </button>
+            </form>
+            &nbsp; &nbsp; &nbsp;
+            <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}" class="btn btn-secondary">
+                ⬅️ 취소
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmAssignmentDelete() {
+        const assignmentTitle = '[[${assignment.title}]]';
+        const submissionCount = [[${submissionCount}]];
+
+        let message = `정말로 "${assignmentTitle}" 과제를 삭제하시겠습니까?\n\n`;
+        if (submissionCount > 0) {
+            message += `⚠️ 경고: ${submissionCount}개의 제출물도 함께 삭제됩니다.\n\n`;
+        }
+        message += "이 작업은 되돌릴 수 없습니다.";
+        return confirm(message);
+    }
+</script>
+</body>
+</html>

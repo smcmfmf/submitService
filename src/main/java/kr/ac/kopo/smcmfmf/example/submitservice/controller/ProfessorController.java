@@ -65,6 +65,72 @@ public class ProfessorController {
         return "professor/course_detail";
     }
 
+    // 과목 삭제 확인 페이지 - URL 매핑 수정
+    @GetMapping("/course/{courseId}/delete-confirm")
+    public String confirmDeleteCourse(@PathVariable Long courseId,
+                                      @SessionAttribute("user") User professor,
+                                      Model model,
+                                      RedirectAttributes redirectAttributes) {
+        log.info("과목 삭제 확인 페이지 요청: courseId={}, professor={}", courseId, professor.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+            log.info("과목 조회 성공: {}", course.getName());
+
+            // 권한 확인
+            if (!course.getProfessor().getId().equals(professor.getId())) {
+                log.warn("권한 없는 삭제 시도: courseId={}, requestUser={}, courseOwner={}",
+                        courseId, professor.getName(), course.getProfessor().getName());
+                redirectAttributes.addFlashAttribute("error", "해당 과목을 삭제할 권한이 없습니다.");
+                return "redirect:/professor/dashboard";
+            }
+
+            CourseService.CourseDeleteInfo deleteInfo = courseService.getCourseDeleteInfo(courseId);
+            log.info("삭제 정보 조회 완료: assignments={}, enrollments={}, submissions={}",
+                    deleteInfo.getAssignmentCount(), deleteInfo.getEnrollmentCount(), deleteInfo.getSubmissionCount());
+
+            model.addAttribute("course", course);
+            model.addAttribute("deleteInfo", deleteInfo);
+
+            return "professor/course_delete"; // 파일명 수정
+        } catch (Exception e) {
+            log.error("과목 삭제 확인 페이지 로드 중 오류: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "과목 정보를 불러올 수 없습니다: " + e.getMessage());
+            return "redirect:/professor/dashboard";
+        }
+    }
+
+    // 과목 삭제 실행
+    @PostMapping("/course/{courseId}/delete")
+    public String deleteCourse(@PathVariable Long courseId,
+                               @SessionAttribute("user") User professor,
+                               RedirectAttributes redirectAttributes) {
+        log.info("과목 삭제 실행 요청: courseId={}, professor={}", courseId, professor.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+            String courseName = course.getName();
+            log.info("삭제할 과목: {}", courseName);
+
+            courseService.deleteCourse(courseId, professor);
+
+            log.info("과목 삭제 성공: {}", courseName);
+            redirectAttributes.addFlashAttribute("success",
+                    "과목 '" + courseName + "'이(가) 성공적으로 삭제되었습니다.");
+
+            return "redirect:/professor/dashboard";
+
+        } catch (IllegalStateException e) {
+            log.warn("과목 삭제 권한 오류: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/professor/dashboard";
+        } catch (Exception e) {
+            log.error("과목 삭제 중 오류 발생: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "과목 삭제 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/professor/dashboard";
+        }
+    }
+
     // 과제 생성 폼
     @GetMapping("/course/{courseId}/assignment/new")
     public String createAssignmentForm(@PathVariable Long courseId, Model model) {
@@ -163,7 +229,74 @@ public class ProfessorController {
             Assignment assignment = assignmentService.getAssignmentById(assignmentId);
             model.addAttribute("assignment", assignment);
             model.addAttribute("courseId", assignment.getCourse().getCourseId());
-            return "professor/assignment_edit_form";
+            return "professor/assignment_edit";
+        }
+    }
+
+    // 과제 삭제 확인 페이지 - URL 매핑 수정
+    @GetMapping("/assignment/{assignmentId}/delete-confirm")
+    public String confirmDeleteAssignment(@PathVariable Long assignmentId,
+                                          @SessionAttribute("user") User professor,
+                                          Model model,
+                                          RedirectAttributes redirectAttributes) {
+        log.info("과제 삭제 확인 페이지 요청: assignmentId={}, professor={}", assignmentId, professor.getName());
+
+        try {
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            log.info("과제 조회 성공: {}", assignment.getTitle());
+
+            // 권한 확인
+            if (!assignment.getCourse().getProfessor().getId().equals(professor.getId())) {
+                log.warn("권한 없는 과제 삭제 시도: assignmentId={}", assignmentId);
+                redirectAttributes.addFlashAttribute("error", "해당 과제를 삭제할 권한이 없습니다.");
+                return "redirect:/professor/dashboard";
+            }
+
+            List<Submission> submissions = submissionService.getSubmissionsByAssignment(assignment);
+            log.info("과제 제출물 수: {}", submissions.size());
+
+            model.addAttribute("assignment", assignment);
+            model.addAttribute("submissionCount", submissions.size());
+
+            return "professor/assignment_delete"; // 파일명 수정
+        } catch (Exception e) {
+            log.error("과제 삭제 확인 페이지 로드 중 오류: assignmentId={}", assignmentId, e);
+            redirectAttributes.addFlashAttribute("error", "과제 정보를 불러올 수 없습니다: " + e.getMessage());
+            return "redirect:/professor/dashboard";
+        }
+    }
+
+    // 과제 삭제 실행
+    @PostMapping("/assignment/{assignmentId}/delete")
+    public String deleteAssignment(@PathVariable Long assignmentId,
+                                   @SessionAttribute("user") User professor,
+                                   RedirectAttributes redirectAttributes) {
+        log.info("과제 삭제 실행 요청: assignmentId={}, professor={}", assignmentId, professor.getName());
+
+        try {
+            Assignment assignment = assignmentService.getAssignmentById(assignmentId);
+            Long courseId = assignment.getCourse().getCourseId();
+            String assignmentTitle = assignment.getTitle();
+            log.info("삭제할 과제: {} (courseId: {})", assignmentTitle, courseId);
+
+            // 권한 확인
+            if (!assignment.getCourse().getProfessor().getId().equals(professor.getId())) {
+                log.warn("권한 없는 과제 삭제 시도");
+                redirectAttributes.addFlashAttribute("error", "해당 과제를 삭제할 권한이 없습니다.");
+                return "redirect:/professor/dashboard";
+            }
+
+            assignmentService.deleteAssignment(assignmentId);
+
+            log.info("과제 삭제 성공: {}", assignmentTitle);
+            redirectAttributes.addFlashAttribute("success",
+                    "과제 '" + assignmentTitle + "'이(가) 성공적으로 삭제되었습니다.");
+
+            return "redirect:/professor/course/" + courseId;
+        } catch (Exception e) {
+            log.error("과제 삭제 중 오류 발생: assignmentId={}", assignmentId, e);
+            redirectAttributes.addFlashAttribute("error", "과제 삭제 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/professor/dashboard";
         }
     }
 

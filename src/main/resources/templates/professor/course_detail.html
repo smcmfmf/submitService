@@ -215,6 +215,7 @@
                 <th>📅 마감일</th>
                 <th>📎 첨부파일</th>
                 <th>📊 제출물 확인</th>
+                <th>🗑️ 삭제</th>
             </tr>
             </thead>
             <tbody>
@@ -239,6 +240,12 @@
                     <a th:href="@{/professor/assignment/{id}/submissions(id=${assignment.assignmentId})}"
                        class="view-submissions-btn">
                         📝 제출물 보기
+                    </a>
+                </td>
+                <td>
+                    <a th:href="@{/professor/assignment/{id}/delete-confirm(id=${assignment.assignmentId})}"
+                       class="attachment-link" style="background-color: #f3d2fd">
+                        <i class="bi bi-trash"></i>❌ 삭제
                     </a>
                 </td>
             </tr>

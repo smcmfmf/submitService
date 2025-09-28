@@ -163,6 +163,10 @@
             <div class="course-actions">
                 <a th:href="@{/professor/course/{id}(id=${course.courseId})}">📋 과제 관리</a>
                 <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}">➕ 새 과제</a>
+                <a th:href="@{/professor/course/{id}/delete-confirm(id=${course.courseId})}"
+                   class="btn btn-danger btn-sm" style="background-color: #d997fb">
+                    <i class="bi bi-trash"></i>❌ 삭제
+                </a>
             </div>
         </div>
     </div>

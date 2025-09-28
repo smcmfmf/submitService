@@ -3,8 +3,10 @@ package kr.ac.kopo.smcmfmf.example.submitservice.repository;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Assignment;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,4 +63,13 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
      */
     @Query("SELECT a FROM Assignment a WHERE a.course = :course AND a.deadline > :now ORDER BY a.deadline ASC")
     List<Assignment> findNextDeadlineAssignment(@Param("course") Course course, @Param("now") LocalDateTime now);
+
+    // 삭제 관련 쿼리 추가
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Submission s WHERE s.assignment.assignmentId = :assignmentId")
+    void deleteSubmissionsByAssignmentId(@Param("assignmentId") Long assignmentId);
+
+    @Query("SELECT COUNT(s) FROM Submission s WHERE s.assignment.assignmentId = :assignmentId")
+    long countSubmissionsByAssignmentId(@Param("assignmentId") Long assignmentId);
 }

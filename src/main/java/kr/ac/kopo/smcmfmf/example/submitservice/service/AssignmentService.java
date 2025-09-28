@@ -3,6 +3,7 @@ package kr.ac.kopo.smcmfmf.example.submitservice.service;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Assignment;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Course;
 import kr.ac.kopo.smcmfmf.example.submitservice.repository.AssignmentRepository;
+import kr.ac.kopo.smcmfmf.example.submitservice.repository.SubmissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 @Transactional
 public class AssignmentService {
     private final AssignmentRepository assignmentRepository;
+    private final SubmissionRepository submissionRepository;
 
     public Assignment createAssignment(Assignment assignment) {
         // 마감일 검증
@@ -122,10 +124,38 @@ public class AssignmentService {
                 .orElseThrow(() -> new RuntimeException("Assignment not found with id: " + assignmentId));
     }
 
+    /**
+     * 과제 삭제 (관련된 제출물도 함께 삭제)
+     */
+    @Transactional
     public void deleteAssignment(Long assignmentId) {
+        log.info("===== 과제 삭제 프로세스 시작 =====");
+        log.info("assignmentId: {}", assignmentId);
+
         Assignment assignment = getAssignmentById(assignmentId);
-        log.info("과제 삭제: {}", assignment.getTitle());
-        assignmentRepository.delete(assignment);
+        log.info("과제 삭제 시작: '{}'", assignment.getTitle());
+
+        try {
+            // 제출물 수 확인
+            long submissionCount = assignmentRepository.countSubmissionsByAssignmentId(assignmentId);
+            log.info("삭제할 제출물 수: {}", submissionCount);
+
+            // 1단계: 제출물 삭제
+            if (submissionCount > 0) {
+                assignmentRepository.deleteSubmissionsByAssignmentId(assignmentId);
+                log.info("제출물 {} 개 삭제 완료", submissionCount);
+            }
+
+            // 2단계: 과제 삭제
+            assignmentRepository.deleteById(assignmentId);
+            assignmentRepository.flush(); // 즉시 DB 반영
+
+            log.info("===== 과제 삭제 완료: '{}' =====", assignment.getTitle());
+
+        } catch (Exception e) {
+            log.error("과제 삭제 중 오류 발생: ", e);
+            throw new RuntimeException("과제 삭제 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
     }
 
     /**
