@@ -93,7 +93,7 @@ public class DataInitializationConfig implements ApplicationRunner {
 
         // 학생 계정 생성 (승인된 상태)
         User student1 = User.builder()
-                .name("홍학생")
+                .name("배형권")
                 .email("student1@kopo.ac.kr")
                 .password("password123")
                 .role(User.Role.STUDENT)
@@ -104,24 +104,13 @@ public class DataInitializationConfig implements ApplicationRunner {
                 .build();
 
         User student2 = User.builder()
-                .name("박학생")
+                .name("최학생")
                 .email("student2@kopo.ac.kr")
                 .password("password123")
                 .role(User.Role.STUDENT)
                 .accountStatus(User.AccountStatus.APPROVED)
                 .approvedBy(admin)
                 .approvedAt(LocalDateTime.now().minusDays(3))
-                .statusReason("초기 데이터 설정")
-                .build();
-
-        User student3 = User.builder()
-                .name("최학생")
-                .email("student3@kopo.ac.kr")
-                .password("password123")
-                .role(User.Role.STUDENT)
-                .accountStatus(User.AccountStatus.APPROVED)
-                .approvedBy(admin)
-                .approvedAt(LocalDateTime.now().minusDays(2))
                 .statusReason("초기 데이터 설정")
                 .build();
 
@@ -146,7 +135,6 @@ public class DataInitializationConfig implements ApplicationRunner {
         userRepository.save(professor2);
         userRepository.save(student1);
         userRepository.save(student2);
-        userRepository.save(student3);
         userRepository.save(pendingProfessor);
         userRepository.save(pendingStudent);
 
@@ -185,8 +173,6 @@ public class DataInitializationConfig implements ApplicationRunner {
         enrollmentRepository.save(Enrollment.builder().student(student1).course(course2).build());
         enrollmentRepository.save(Enrollment.builder().student(student2).course(course1).build());
         enrollmentRepository.save(Enrollment.builder().student(student2).course(course3).build());
-        enrollmentRepository.save(Enrollment.builder().student(student3).course(course2).build());
-        enrollmentRepository.save(Enrollment.builder().student(student3).course(course3).build());
 
         // 과제 생성
         Assignment assignment1 = Assignment.builder()
@@ -219,26 +205,10 @@ public class DataInitializationConfig implements ApplicationRunner {
                 .deadline(LocalDateTime.of(2025, 1, 5, 23, 59))
                 .build();
 
-        Assignment assignment5 = Assignment.builder()
-                .course(course3)
-                .title("HTML/CSS 포트폴리오")
-                .description("개인 포트폴리오 웹페이지를 만들어 제출하세요.")
-                .deadline(LocalDateTime.of(2024, 12, 31, 23, 59))
-                .build();
-
-        Assignment assignment6 = Assignment.builder()
-                .course(course3)
-                .title("JavaScript 계산기")
-                .description("JavaScript를 활용한 계산기를 구현하세요.")
-                .deadline(LocalDateTime.of(2025, 1, 10, 23, 59))
-                .build();
-
         assignmentRepository.save(assignment1);
         assignmentRepository.save(assignment2);
         assignmentRepository.save(assignment3);
         assignmentRepository.save(assignment4);
-        assignmentRepository.save(assignment5);
-        assignmentRepository.save(assignment6);
 
         // 제출물 생성
         Submission submission1 = Submission.builder()
@@ -273,42 +243,9 @@ public class DataInitializationConfig implements ApplicationRunner {
                 .isGraded(Boolean.FALSE) // 임시 채점 상태
                 .build();
 
-        Submission submission4 = Submission.builder()
-                .assignment(assignment3)
-                .student(student3)
-                .fileUrl("/files/download/studentTest.txt")
-                .submittedAt(LocalDateTime.of(2024, 12, 23, 14, 20))
-                .grade(new BigDecimal("78.00"))
-                .feedback("ER 다이어그램의 기본 구조는 좋습니다. 관계의 카디널리티 표현을 더 정확히 해주세요.")
-                .isGraded(Boolean.TRUE)
-                .gradedAt(LocalDateTime.of(2024, 12, 24, 9, 15))
-                .build();
-
-        Submission submission5 = Submission.builder()
-                .assignment(assignment5)
-                .student(student2)
-                .fileUrl("/files/download/studentTest.txt")
-                .submittedAt(LocalDateTime.of(2024, 12, 25, 16, 45))
-                .isGraded(Boolean.FALSE) // 아직 채점 안됨
-                .build();
-
-        Submission submission6 = Submission.builder()
-                .assignment(assignment5)
-                .student(student3)
-                .fileUrl("/files/download/studentTest.txt")
-                .submittedAt(LocalDateTime.of(2024, 12, 25, 16, 45))
-                .grade(new BigDecimal("88.50"))
-                .feedback("디자인이 깔끔하고 반응형도 잘 구현하셨네요. CSS 애니메이션을 추가하면 더 좋을 것 같습니다.")
-                .isGraded(Boolean.TRUE)
-                .gradedAt(LocalDateTime.of(2024, 12, 26, 11, 20))
-                .build();
-
         submissionRepository.save(submission1);
         submissionRepository.save(submission2);
         submissionRepository.save(submission3);
-        submissionRepository.save(submission4);
-        submissionRepository.save(submission5);
-        submissionRepository.save(submission6);
 
         log.info("===================================");
         log.info("테스트용 초기 데이터가 로딩되었습니다!");
@@ -330,15 +267,12 @@ public class DataInitializationConfig implements ApplicationRunner {
         log.info("🎓 학생 계정 (승인됨):");
         log.info("   이메일: student1@kopo.ac.kr");
         log.info("   비밀번호: password123");
-        log.info("   이름: 홍학생");
+        log.info("   이름: 배학생");
         log.info("");
         log.info("   이메일: student2@kopo.ac.kr");
         log.info("   비밀번호: password123");
-        log.info("   이름: 박학생");
-        log.info("");
-        log.info("   이메일: student3@kopo.ac.kr");
-        log.info("   비밀번호: password123");
         log.info("   이름: 최학생");
+        log.info("");
         log.info("===================================");
         log.info("⏳ 승인 대기 계정:");
         log.info("   교수: newprof@kopo.ac.kr / password123");
