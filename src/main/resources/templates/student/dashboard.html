@@ -260,6 +260,10 @@
                     <a th:href="@{/student/course/{id}(id=${course.courseId})}" class="view-assignments-btn">
                         📋 과제 보기
                     </a>
+                    <a class="view-assignments-btn" style="background-color: #ec982b"
+                       th:href="@{/student/course/{courseId}/withdraw-confirm(courseId=${course.courseId})}">
+                        <i class="fas fa-sign-out-alt me-2"></i>수강 철회
+                    </a>
                 </div>
             </div>
         </div>

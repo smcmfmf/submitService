@@ -62,6 +62,73 @@ public class StudentController {
         }
     }
 
+    // 수강 철회 확인 페이지
+    @GetMapping("/course/{courseId}/withdraw-confirm")
+    public String confirmWithdrawCourse(@PathVariable Long courseId,
+                                        @SessionAttribute("user") User student,
+                                        Model model,
+                                        RedirectAttributes redirectAttributes) {
+        log.info("수강 철회 확인 페이지 요청: courseId={}, student={}", courseId, student.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+
+            // 수강 여부 확인
+            if (!courseService.isStudentEnrolled(student, course)) {
+                log.warn("수강하지 않은 과목의 철회 시도: courseId={}, student={}", courseId, student.getName());
+                redirectAttributes.addFlashAttribute("error", "수강하지 않은 과목입니다.");
+                return "redirect:/student/dashboard";
+            }
+
+            // 철회 관련 정보 수집
+            CourseService.CourseWithdrawInfo withdrawInfo = courseService.getCourseWithdrawInfo(student, course);
+
+            model.addAttribute("course", course);
+            model.addAttribute("withdrawInfo", withdrawInfo);
+
+            return "student/course_exit";
+        } catch (Exception e) {
+            log.error("수강 철회 확인 페이지 로드 중 오류: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "과목 정보를 불러올 수 없습니다: " + e.getMessage());
+            return "redirect:/student/dashboard";
+        }
+    }
+
+    // 수강 철회 실행
+    @PostMapping("/course/{courseId}/withdraw")
+    public String withdrawFromCourse(@PathVariable Long courseId,
+                                     @SessionAttribute("user") User student,
+                                     RedirectAttributes redirectAttributes) {
+        log.info("수강 철회 실행 요청: courseId={}, student={}", courseId, student.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+            String courseName = course.getName();
+
+            // 수강 철회 실행
+            CourseService.CourseWithdrawResult result = courseService.withdrawStudent(student, course);
+
+            log.info("수강 철회 완료: {} - {}", student.getName(), courseName);
+
+            String successMessage = String.format("'%s' 과목에서 성공적으로 철회되었습니다.", courseName);
+            if (result.getDeletedSubmissions() > 0) {
+                successMessage += String.format(" (제출물 %d개가 함께 삭제되었습니다.)", result.getDeletedSubmissions());
+            }
+
+            redirectAttributes.addFlashAttribute("success", successMessage);
+            return "redirect:/student/dashboard";
+
+        } catch (IllegalStateException e) {
+            log.warn("수강 철회 권한 오류: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/student/dashboard";
+        } catch (Exception e) {
+            log.error("수강 철회 중 오류 발생: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "수강 철회 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/student/dashboard";
+        }
+    }
+
     // 특정 과목의 과제 목록 확인
     @GetMapping("/course/{courseId}")
     public String viewCourseAssignments(@PathVariable Long courseId,
