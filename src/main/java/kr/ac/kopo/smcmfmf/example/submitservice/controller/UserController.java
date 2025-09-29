@@ -93,7 +93,6 @@ public class UserController {
                             @RequestParam(value = "signup", required = false) String signup,
                             @RequestParam(value = "admin_created", required = false) String adminCreated,
                             Model model) {
-
         if ("unauthorized".equals(error)) {
             model.addAttribute("error", "로그인이 필요합니다.");
         }
