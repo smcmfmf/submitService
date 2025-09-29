@@ -1,5 +1,6 @@
 package kr.ac.kopo.smcmfmf.example.submitservice.controller;
 
+import jakarta.servlet.http.HttpSession;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Assignment;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Course;
 import kr.ac.kopo.smcmfmf.example.submitservice.domain.Submission;
@@ -30,24 +31,45 @@ public class StudentController {
     private final SubmissionService submissionService;
     private final FileService fileService;
 
+    // 학생 권한 체크 헬퍼 메서드
+    private String checkStudentAuthAndRedirect(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null || user.getRole() != User.Role.STUDENT) {
+            log.warn("권한 없는 사용자의 학생 페이지 접근 시도");
+            return "redirect:/login?error=unauthorized";
+        }
+        return null; // 권한이 있으면 null 반환
+    }
+
     @GetMapping("/dashboard")
-    public String dashboard(@SessionAttribute("user") User user, Model model) {
-        List<Course> courses = courseService.getStudentCourses(user);
+    public String dashboard(HttpSession session, Model model) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
+        List<Course> courses = courseService.getStudentCourses(student);
         model.addAttribute("courses", courses);
         return "student/dashboard";
     }
 
     // 수강 신청 폼
     @GetMapping("/enroll")
-    public String enrollForm() {
+    public String enrollForm(HttpSession session) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
         return "student/enroll_form";
     }
 
     // 수강 신청 처리
     @PostMapping("/enroll")
     public String enrollCourse(@RequestParam String courseCode,
-                               @SessionAttribute("user") User student,
+                               HttpSession session,
                                Model model) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
         try {
             boolean success = courseService.enrollStudent(student, courseCode);
             if (success) {
@@ -62,11 +84,87 @@ public class StudentController {
         }
     }
 
+    // 수강 철회 확인 페이지
+    @GetMapping("/course/{courseId}/withdraw-confirm")
+    public String confirmWithdrawCourse(@PathVariable Long courseId,
+                                        HttpSession session,
+                                        Model model,
+                                        RedirectAttributes redirectAttributes) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
+        log.info("수강 철회 확인 페이지 요청: courseId={}, student={}", courseId, student.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+
+            // 수강 여부 확인
+            if (!courseService.isStudentEnrolled(student, course)) {
+                log.warn("수강하지 않은 과목의 철회 시도: courseId={}, student={}", courseId, student.getName());
+                redirectAttributes.addFlashAttribute("error", "수강하지 않은 과목입니다.");
+                return "redirect:/student/dashboard";
+            }
+
+            CourseService.CourseWithdrawInfo withdrawInfo = courseService.getCourseWithdrawInfo(student, course);
+
+            model.addAttribute("course", course);
+            model.addAttribute("withdrawInfo", withdrawInfo);
+
+            return "student/course_exit";
+        } catch (Exception e) {
+            log.error("수강 철회 확인 페이지 로드 중 오류: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "과목 정보를 불러올 수 없습니다: " + e.getMessage());
+            return "redirect:/student/dashboard";
+        }
+    }
+
+    // 수강 철회 실행
+    @PostMapping("/course/{courseId}/withdraw")
+    public String withdrawFromCourse(@PathVariable Long courseId,
+                                     HttpSession session,
+                                     RedirectAttributes redirectAttributes) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
+        log.info("수강 철회 실행 요청: courseId={}, student={}", courseId, student.getName());
+
+        try {
+            Course course = courseService.getCourseById(courseId);
+            String courseName = course.getName();
+
+            CourseService.CourseWithdrawResult result = courseService.withdrawStudent(student, course);
+
+            log.info("수강 철회 완료: {} - {}", student.getName(), courseName);
+
+            String successMessage = String.format("'%s' 과목에서 성공적으로 철회되었습니다.", courseName);
+            if (result.getDeletedSubmissions() > 0) {
+                successMessage += String.format(" (제출물 %d개가 함께 삭제되었습니다.)", result.getDeletedSubmissions());
+            }
+
+            redirectAttributes.addFlashAttribute("success", successMessage);
+            return "redirect:/student/dashboard";
+
+        } catch (IllegalStateException e) {
+            log.warn("수강 철회 권한 오류: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/student/dashboard";
+        } catch (Exception e) {
+            log.error("수강 철회 중 오류 발생: courseId={}", courseId, e);
+            redirectAttributes.addFlashAttribute("error", "수강 철회 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/student/dashboard";
+        }
+    }
+
     // 특정 과목의 과제 목록 확인
     @GetMapping("/course/{courseId}")
     public String viewCourseAssignments(@PathVariable Long courseId,
-                                        @SessionAttribute("user") User student,
+                                        HttpSession session,
                                         Model model) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
         Course course = courseService.getCourseById(courseId);
         List<Assignment> assignments = assignmentService.getAssignmentsByCourse(course);
         model.addAttribute("course", course);
@@ -77,15 +175,18 @@ public class StudentController {
     // 과제 제출 폼
     @GetMapping("/assignment/{assignmentId}/submit")
     public String submitForm(@PathVariable Long assignmentId,
-                             @SessionAttribute("user") User student,
+                             HttpSession session,
                              Model model,
                              RedirectAttributes redirectAttributes) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
         try {
             Assignment assignment = assignmentService.getAssignmentById(assignmentId);
             Optional<Submission> existingSubmission =
                     submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
 
-            // 기존 제출물이 있고 평가가 완료된 경우 재제출 불가
             if (existingSubmission.isPresent() && existingSubmission.get().getIsGraded()) {
                 redirectAttributes.addFlashAttribute(
                         "error",
@@ -95,10 +196,8 @@ public class StudentController {
             }
 
             model.addAttribute("assignment", assignment);
-            existingSubmission.ifPresent(submission ->
-                    model.addAttribute("existingSubmission", submission));
+            existingSubmission.ifPresent(submission -> model.addAttribute("existingSubmission", submission));
 
-            // 재제출 가능 여부 추가
             boolean canResubmit = submissionService.canResubmit(assignment, student);
             model.addAttribute("canResubmit", canResubmit);
 
@@ -113,10 +212,14 @@ public class StudentController {
     // 과제 제출 처리
     @PostMapping("/assignment/{assignmentId}/submit")
     public String submitAssignment(@PathVariable Long assignmentId,
-                                   @SessionAttribute("user") User student,
+                                   HttpSession session,
                                    @RequestParam("file") MultipartFile file,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
         try {
             if (file.isEmpty()) {
                 model.addAttribute("error", "파일을 선택해주세요.");
@@ -127,7 +230,6 @@ public class StudentController {
 
             Assignment assignment = assignmentService.getAssignmentById(assignmentId);
 
-            // 재제출 가능 여부 확인
             if (!submissionService.canResubmit(assignment, student)) {
                 redirectAttributes.addFlashAttribute(
                         "error",
@@ -136,7 +238,6 @@ public class StudentController {
                 return "redirect:/student/assignment/" + assignmentId + "/my-submission";
             }
 
-            // 파일 실제 저장
             String savedFileName = fileService.saveStudentSubmission(file, student.getName());
             String fileUrl = "/files/download/" + savedFileName;
 
@@ -162,7 +263,11 @@ public class StudentController {
 
     // 내 제출물 및 점수 확인
     @GetMapping("/submissions")
-    public String viewMySubmissions(@SessionAttribute("user") User student, Model model) {
+    public String viewMySubmissions(HttpSession session, Model model) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
         List<Submission> submissions = submissionService.getSubmissionsByStudent(student);
         model.addAttribute("submissions", submissions);
         return "student/my_submissions";
@@ -171,8 +276,12 @@ public class StudentController {
     // 특정 과제의 내 제출물 상세 확인
     @GetMapping("/assignment/{assignmentId}/my-submission")
     public String viewMySubmission(@PathVariable Long assignmentId,
-                                   @SessionAttribute("user") User student,
+                                   HttpSession session,
                                    Model model) {
+        String redirect = checkStudentAuthAndRedirect(session);
+        if (redirect != null) return redirect;
+
+        User student = (User) session.getAttribute("user");
         Assignment assignment = assignmentService.getAssignmentById(assignmentId);
         Optional<Submission> submission =
                 submissionService.getSubmissionByAssignmentAndStudent(assignment, student);
@@ -180,11 +289,9 @@ public class StudentController {
         model.addAttribute("assignment", assignment);
         submission.ifPresent(s -> {
             model.addAttribute("submission", s);
-            // 재제출 가능 여부 추가
             model.addAttribute("canResubmit", !s.getIsGraded());
         });
 
-        // 재제출 가능 여부 (제출물이 없는 경우)
         if (submission.isEmpty()) {
             model.addAttribute("canResubmit", true);
         }

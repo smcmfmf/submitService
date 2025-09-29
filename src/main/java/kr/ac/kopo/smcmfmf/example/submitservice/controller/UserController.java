@@ -87,6 +87,30 @@ public class UserController {
         }
     }
 
+    // 로그인 페이지 (GET) - 메시지 처리
+    @GetMapping("/login")
+    public String loginPage(@RequestParam(value = "error", required = false) String error,
+                            @RequestParam(value = "signup", required = false) String signup,
+                            @RequestParam(value = "admin_created", required = false) String adminCreated,
+                            Model model) {
+
+        if ("unauthorized".equals(error)) {
+            model.addAttribute("error", "로그인이 필요합니다.");
+        }
+
+        if ("pending".equals(signup)) {
+            model.addAttribute("success", "회원가입이 완료되었습니다. 관리자 승인을 기다려주세요.");
+        } else if ("admin_success".equals(signup)) {
+            model.addAttribute("success", "관리자 계정이 생성되었습니다. 로그인해주세요.");
+        }
+
+        if ("true".equals(adminCreated)) {
+            model.addAttribute("success", "첫 번째 관리자 계정이 생성되었습니다. 로그인해주세요.");
+        }
+
+        return "login";
+    }
+
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,

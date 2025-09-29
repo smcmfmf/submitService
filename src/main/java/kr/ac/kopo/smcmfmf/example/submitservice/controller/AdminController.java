@@ -34,16 +34,24 @@ public class AdminController {
         return user;
     }
 
+    // 권한 체크 및 로그인 리다이렉트 헬퍼 메서드
+    private String checkAdminAuthAndRedirect(HttpSession session) {
+        User admin = getAdminFromSession(session);
+        if (admin == null) {
+            log.warn("권한 없는 사용자의 관리자 페이지 접근 시도");
+            return "redirect:/login?error=unauthorized";
+        }
+        return null; // 권한이 있으면 null 반환
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         log.debug("관리자 대시보드 접근 요청");
 
-        User admin = getAdminFromSession(session);
-        if (admin == null) {
-            log.warn("권한 없는 사용자의 관리자 페이지 접근 시도");
-            return "redirect:/";
-        }
+        String redirect = checkAdminAuthAndRedirect(session);
+        if (redirect != null) return redirect;
 
+        User admin = getAdminFromSession(session);
         log.info("관리자 대시보드 접근: {}", admin.getEmail());
 
         // 대시보드 통계 정보
@@ -77,11 +85,8 @@ public class AdminController {
 
         log.debug("사용자 목록 조회 요청: page={}, size={}, status={}, role={}", page, size, status, role);
 
-        User admin = getAdminFromSession(session);
-        if (admin == null) {
-            log.warn("권한 없는 사용자의 사용자 목록 접근 시도");
-            return "redirect:/";
-        }
+        String redirect = checkAdminAuthAndRedirect(session);
+        if (redirect != null) return redirect;
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<User> users = userService.findUsersWithFilters(status, role, pageable);
@@ -102,11 +107,8 @@ public class AdminController {
     public String pendingUsers(HttpSession session, Model model) {
         log.debug("승인 대기 사용자 목록 조회 요청");
 
-        User admin = getAdminFromSession(session);
-        if (admin == null) {
-            log.warn("권한 없는 사용자의 승인 대기 목록 접근 시도");
-            return "redirect:/";
-        }
+        String redirect = checkAdminAuthAndRedirect(session);
+        if (redirect != null) return redirect;
 
         List<User> pendingUsers = userService.findByAccountStatus(User.AccountStatus.PENDING);
         model.addAttribute("pendingUsers", pendingUsers);
@@ -121,11 +123,8 @@ public class AdminController {
     public String rejectedUsers(HttpSession session, Model model) {
         log.debug("거부된 사용자 목록 조회 요청");
 
-        User admin = getAdminFromSession(session);
-        if (admin == null) {
-            log.warn("권한 없는 사용자의 거부된 사용자 목록 접근 시도");
-            return "redirect:/";
-        }
+        String redirect = checkAdminAuthAndRedirect(session);
+        if (redirect != null) return redirect;
 
         List<User> rejectedUsers = userService.findByAccountStatus(User.AccountStatus.REJECTED);
         model.addAttribute("rejectedUsers", rejectedUsers);
@@ -149,7 +148,7 @@ public class AdminController {
             if (admin == null) {
                 log.error("권한 없는 사용자의 승인 시도");
                 redirectAttributes.addFlashAttribute("error", "관리자 권한이 필요합니다.");
-                return "redirect:/";
+                return "redirect:/login?error=unauthorized";
             }
 
             User user = userService.approveUser(userId, admin, reason);
@@ -185,7 +184,7 @@ public class AdminController {
             if (admin == null) {
                 log.error("권한 없는 사용자의 거부 시도");
                 redirectAttributes.addFlashAttribute("error", "관리자 권한이 필요합니다.");
-                return "redirect:/";
+                return "redirect:/login?error=unauthorized";
             }
 
             User user = userService.rejectUser(userId, admin, reason);
@@ -211,11 +210,8 @@ public class AdminController {
         log.debug("사용자 상세 조회 요청: userId={}", userId);
 
         try {
-            User admin = getAdminFromSession(session);
-            if (admin == null) {
-                log.warn("권한 없는 사용자의 사용자 상세 조회 시도");
-                return "redirect:/";
-            }
+            String redirect = checkAdminAuthAndRedirect(session);
+            if (redirect != null) return redirect;
 
             User user = userService.findById(userId);
             model.addAttribute("viewUser", user);
@@ -248,7 +244,7 @@ public class AdminController {
             if (admin == null) {
                 log.error("권한 없는 사용자의 정지 시도");
                 redirectAttributes.addFlashAttribute("error", "관리자 권한이 필요합니다.");
-                return "redirect:/";
+                return "redirect:/login?error=unauthorized";
             }
 
             User user = userService.suspendUser(userId, admin, reason);
@@ -278,7 +274,7 @@ public class AdminController {
             if (admin == null) {
                 log.error("권한 없는 사용자의 재활성화 시도");
                 redirectAttributes.addFlashAttribute("error", "관리자 권한이 필요합니다.");
-                return "redirect:/";
+                return "redirect:/login?error=unauthorized";
             }
 
             User user = userService.reactivateUser(userId, admin, reason);

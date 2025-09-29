@@ -18,203 +18,172 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class SubmissionService {
+
     private final SubmissionRepository submissionRepository;
 
     @Transactional
     public Submission submitAssignment(Assignment assignment, User student, String fileUrl) {
-        if (fileUrl == null || fileUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("파일 URL은 필수입니다.");
-        }
+        log.info("과제 제출 처리: assignment={}, student={}", assignment.getTitle(), student.getName());
 
-        return submissionRepository.findByAssignmentAndStudent(assignment, student)
-                .map(existing -> {
-                    try {
-                        existing.resubmit(fileUrl);
-                        log.info("과제 재제출 완료: 학생={}, 과제={}", student.getName(), assignment.getTitle());
-                        return submissionRepository.save(existing);
-                    } catch (IllegalStateException e) {
-                        log.warn("재제출 실패: {}", e.getMessage());
-                        throw e;
-                    }
-                })
-                .orElseGet(() -> {
-                    Submission submission = Submission.builder()
-                            .assignment(assignment)
-                            .student(student)
-                            .fileUrl(fileUrl)
-                            .isGraded(Boolean.FALSE) // 명시적으로 설정
-                            .build();
-                    log.info("과제 제출 완료: 학생={}, 과제={}", student.getName(), assignment.getTitle());
-                    return submissionRepository.save(submission);
-                });
+        Optional<Submission> existingSubmission = submissionRepository.findByAssignmentAndStudent(assignment, student);
+
+        if (existingSubmission.isPresent()) {
+            // 기존 제출물이 있는 경우 - 재제출
+            Submission submission = existingSubmission.get();
+
+            // 평가가 완료된 경우 재제출 불가
+            if (submission.getIsGraded()) {
+                throw new IllegalStateException("이미 평가가 완료된 과제입니다. 재제출할 수 없습니다.");
+            }
+
+            // 재제출 처리
+            submission.resubmit(fileUrl);
+            log.info("과제 재제출 완료: {}", assignment.getTitle());
+            return submissionRepository.save(submission);
+        } else {
+            // 새로운 제출물 생성
+            Submission newSubmission = Submission.builder()
+                    .assignment(assignment)
+                    .student(student)
+                    .fileUrl(fileUrl)
+                    .isGraded(false)
+                    .build();
+
+            log.info("과제 새 제출 완료: {}", assignment.getTitle());
+            return submissionRepository.save(newSubmission);
+        }
     }
 
     @Transactional(readOnly = true)
     public List<Submission> getSubmissionsByAssignment(Assignment assignment) {
-        try {
-            List<Submission> submissions = submissionRepository.findByAssignment(assignment);
-            log.debug("과제 '{}' 제출물 {} 개 조회", assignment.getTitle(), submissions.size());
-            return submissions;
-        } catch (Exception e) {
-            log.error("제출물 목록 조회 중 오류 발생: assignment={}", assignment.getTitle(), e);
-            throw new RuntimeException("제출물 목록을 불러올 수 없습니다.", e);
-        }
-    }
-
-    @Transactional
-    public Submission updateGradeAndFeedback(Long submissionId, BigDecimal grade, String feedback) {
-        if (submissionId == null) {
-            throw new IllegalArgumentException("제출물 ID는 필수입니다.");
-        }
-        if (grade == null) {
-            throw new IllegalArgumentException("점수는 필수 입력 항목입니다.");
-        }
-
-        try {
-            Submission submission = getSubmissionById(submissionId);
-
-            if (Boolean.TRUE.equals(submission.getIsGraded())) {
-                throw new IllegalStateException("이미 평가가 완료된 과제는 수정할 수 없습니다.");
-            }
-
-            submission.updateGrading(grade, feedback);
-            log.info("점수 업데이트: 제출물ID={}, 점수={}", submissionId, grade);
-            return submissionRepository.save(submission);
-        } catch (Exception e) {
-            log.error("점수 업데이트 중 오류 발생: submissionId={}", submissionId, e);
-            throw e;
-        }
-    }
-
-    @Transactional
-    public Submission completeGrading(Long submissionId, BigDecimal grade, String feedback) {
-        if (submissionId == null) {
-            throw new IllegalArgumentException("제출물 ID는 필수입니다.");
-        }
-        if (grade == null) {
-            throw new IllegalArgumentException("점수는 필수 입력 항목입니다.");
-        }
-
-        try {
-            Submission submission = getSubmissionById(submissionId);
-
-            if (Boolean.TRUE.equals(submission.getIsGraded())) {
-                throw new IllegalStateException("이미 평가가 완료된 과제입니다.");
-            }
-
-            submission.completeGrading(grade, feedback);
-            log.info("평가 완료: 제출물ID={}, 점수={}, 학생={}",
-                    submissionId, grade, submission.getStudent().getName());
-            return submissionRepository.save(submission);
-        } catch (Exception e) {
-            log.error("평가 완료 중 오류 발생: submissionId={}", submissionId, e);
-            throw e;
-        }
-    }
-
-    @Transactional
-    public Submission cancelGradingCompletion(Long submissionId) {
-        if (submissionId == null) {
-            throw new IllegalArgumentException("제출물 ID는 필수입니다.");
-        }
-
-        try {
-            Submission submission = getSubmissionById(submissionId);
-
-            if (!Boolean.TRUE.equals(submission.getIsGraded())) {
-                throw new IllegalStateException("평가 완료되지 않은 과제입니다.");
-            }
-
-            submission.setIsGraded(Boolean.FALSE);
-            submission.setGradedAt(null);
-            log.info("평가 완료 취소: 제출물ID={}", submissionId);
-            return submissionRepository.save(submission);
-        } catch (Exception e) {
-            log.error("평가 완료 취소 중 오류 발생: submissionId={}", submissionId, e);
-            throw e;
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public Submission getSubmissionById(Long submissionId) {
-        if (submissionId == null) {
-            throw new IllegalArgumentException("제출물 ID는 필수입니다.");
-        }
-
-        try {
-            Submission submission = submissionRepository.findById(submissionId)
-                    .orElseThrow(() -> new RuntimeException("제출물을 찾을 수 없습니다: " + submissionId));
-
-            // isGraded 필드 초기화 확인
-            if (submission.getIsGraded() == null) {
-                log.warn("isGraded 필드가 null인 제출물 발견: {}", submissionId);
-                submission.setIsGraded(Boolean.FALSE);
-                submissionRepository.save(submission);
-            }
-
-            return submission;
-        } catch (Exception e) {
-            log.error("제출물 조회 중 오류 발생: submissionId={}", submissionId, e);
-            throw e;
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public List<Submission> getSubmissionsByStudent(User student) {
-        if (student == null) {
-            throw new IllegalArgumentException("학생 정보는 필수입니다.");
-        }
-
-        try {
-            return submissionRepository.findByStudent(student);
-        } catch (Exception e) {
-            log.error("학생 제출물 목록 조회 중 오류 발생: student={}", student.getName(), e);
-            throw new RuntimeException("제출물 목록을 불러올 수 없습니다.", e);
-        }
+        return submissionRepository.findByAssignment(assignment);
     }
 
     @Transactional(readOnly = true)
     public Optional<Submission> getSubmissionByAssignmentAndStudent(Assignment assignment, User student) {
-        if (assignment == null || student == null) {
-            throw new IllegalArgumentException("과제와 학생 정보는 필수입니다.");
-        }
-
-        try {
-            return submissionRepository.findByAssignmentAndStudent(assignment, student);
-        } catch (Exception e) {
-            log.error("특정 과제 제출물 조회 중 오류 발생: assignment={}, student={}",
-                    assignment.getTitle(), student.getName(), e);
-            throw new RuntimeException("제출물을 불러올 수 없습니다.", e);
-        }
+        return submissionRepository.findByAssignmentAndStudent(assignment, student);
     }
 
     @Transactional(readOnly = true)
-    public boolean canModifyGrade(Long submissionId) {
-        try {
-            Submission submission = getSubmissionById(submissionId);
-            return !Boolean.TRUE.equals(submission.getIsGraded());
-        } catch (Exception e) {
-            log.error("평가 수정 가능 여부 확인 중 오류 발생: submissionId={}", submissionId, e);
-            return false;
-        }
+    public List<Submission> getSubmissionsByStudent(User student) {
+        return submissionRepository.findByStudent(student);
     }
 
+    @Transactional(readOnly = true)
+    public Submission getSubmissionById(Long submissionId) {
+        return submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("Submission not found with id: " + submissionId));
+    }
+
+    /**
+     * 점수와 피드백 업데이트 (임시 저장 - 평가 미완료)
+     */
+    @Transactional
+    public Submission updateGradeAndFeedback(Long submissionId, BigDecimal grade, String feedback) {
+        log.info("점수 업데이트: submissionId={}, grade={}", submissionId, grade);
+
+        Submission submission = getSubmissionById(submissionId);
+
+        // 이미 평가가 완료된 경우 수정 불가
+        if (submission.getIsGraded()) {
+            throw new IllegalStateException("이미 평가가 완료된 과제는 수정할 수 없습니다.");
+        }
+
+        submission.updateGrading(grade, feedback);
+        log.info("점수 임시 저장 완료: assignment={}, grade={}",
+                submission.getAssignment().getTitle(), grade);
+
+        return submissionRepository.save(submission);
+    }
+
+    /**
+     * 평가 완료 처리
+     */
+    @Transactional
+    public Submission completeGrading(Long submissionId, BigDecimal grade, String feedback) {
+        log.info("평가 완료 처리: submissionId={}, grade={}", submissionId, grade);
+
+        Submission submission = getSubmissionById(submissionId);
+
+        // 이미 평가가 완료된 경우
+        if (submission.getIsGraded()) {
+            throw new IllegalStateException("이미 평가가 완료된 과제입니다.");
+        }
+
+        submission.completeGrading(grade, feedback);
+        log.info("평가 완료: assignment={}, grade={}",
+                submission.getAssignment().getTitle(), grade);
+
+        return submissionRepository.save(submission);
+    }
+
+    /**
+     * 평가 완료 취소 (관리자용)
+     */
+    @Transactional
+    public Submission cancelGradingCompletion(Long submissionId) {
+        log.info("평가 완료 취소: submissionId={}", submissionId);
+
+        Submission submission = getSubmissionById(submissionId);
+
+        if (!submission.getIsGraded()) {
+            throw new IllegalStateException("평가가 완료되지 않은 과제입니다.");
+        }
+
+        submission.setIsGraded(false);
+        submission.setGradedAt(null);
+
+        log.info("평가 완료 취소 완료: assignment={}", submission.getAssignment().getTitle());
+
+        return submissionRepository.save(submission);
+    }
+
+    /**
+     * 재제출 가능 여부 확인
+     */
     @Transactional(readOnly = true)
     public boolean canResubmit(Assignment assignment, User student) {
-        try {
-            Optional<Submission> submission = getSubmissionByAssignmentAndStudent(assignment, student);
-            return submission.isEmpty() || !Boolean.TRUE.equals(submission.get().getIsGraded());
-        } catch (Exception e) {
-            log.error("재제출 가능 여부 확인 중 오류 발생: assignment={}, student={}",
-                    assignment.getTitle(), student.getName(), e);
-            return false;
+        Optional<Submission> existingSubmission = submissionRepository.findByAssignmentAndStudent(assignment, student);
+
+        if (existingSubmission.isEmpty()) {
+            // 제출물이 없는 경우 제출 가능
+            return true;
         }
+
+        // 평가가 완료되지 않은 경우에만 재제출 가능
+        return !existingSubmission.get().getIsGraded();
     }
 
-    // 기존 호환성을 위한 메소드 (사용 권장하지 않음)
-    @Deprecated
-    public Submission gradeSubmission(Submission submission, BigDecimal grade, String feedback) {
-        log.warn("gradeSubmission() is deprecated. Use updateGradeAndFeedback() or completeGrading() instead.");
-        return updateGradeAndFeedback(submission.getSubmissionId(), grade, feedback);
+    /**
+     * 마감일 체크 (제출 시 사용)
+     */
+    @Transactional(readOnly = true)
+    public boolean isSubmissionAllowed(Assignment assignment) {
+        LocalDateTime now = LocalDateTime.now();
+        return assignment.getDeadline().isAfter(now);
+    }
+
+    /**
+     * 특정 학생의 특정 과목 제출물 조회 (수강 철회 시 사용)
+     */
+    @Transactional(readOnly = true)
+    public List<Submission> getSubmissionsByStudentAndCourse(User student, Long courseId) {
+        return submissionRepository.findByStudentAndCourseId(student, courseId);
+    }
+
+    /**
+     * 특정 학생의 특정 과목 제출물 수 조회
+     */
+    @Transactional(readOnly = true)
+    public long countSubmissionsByStudentAndCourse(User student, Long courseId) {
+        return submissionRepository.countByStudentAndCourseId(student, courseId);
+    }
+
+    /**
+     * 특정 학생의 특정 과목 평가 완료된 제출물 수 조회
+     */
+    @Transactional(readOnly = true)
+    public long countGradedSubmissionsByStudentAndCourse(User student, Long courseId) {
+        return submissionRepository.countGradedByStudentAndCourseId(student, courseId);
     }
 }
