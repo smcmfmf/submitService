@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교수 대시보드 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        .course-card {
+            background-color: var(--card-background-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 5px solid var(--info-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+        .course-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4em;
+        }
+        .course-meta {
+            color: var(--text-light-color);
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+        .course-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-chalkboard-teacher"></i> 교수 대시보드</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/course/new}"><i class="fas fa-plus-circle"></i> 새 과목 만들기</a>
+        <a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title" th:text="${session.user.name} + ' 교수님, 안녕하세요!'">교수님, 안녕하세요!</h2>
+        <p class="page-subtitle">담당하시는 과목을 관리하고 새로운 과제를 등록해보세요.</p>
+    </div>
+
+    <div class="card">
+        <div class="section-header">
+            <h3><i class="fas fa-book"></i> 내 과목 목록</h3>
+            <a th:href="@{/professor/course/new}" class="btn btn-primary"><i class="fas fa-plus"></i> 새 과목 개설</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(courses)}" style="text-align: center; padding: 60px 20px;">
+            <p style="font-size: 1.2em; color: var(--text-light-color);">아직 개설한 과목이 없습니다.</p>
+        </div>
+
+        <div class="courses-grid" th:unless="${#lists.isEmpty(courses)}">
+            <div th:each="course : ${courses}" class="course-card">
+                <div>
+                    <h3 th:text="${course.name}">과목명</h3>
+                    <div class="course-meta">
+                        <span><i class="fas fa-barcode"></i> 과목 코드: <strong th:text="${course.code}">CODE123</strong></span>
+                    </div>
+                </div>
+                <div class="course-actions">
+                    <a th:href="@{/professor/course/{id}(id=${course.courseId})}" class="btn btn-info"><i class="fas fa-tasks"></i> 과제 관리</a>
+                    <a th:href="@{/professor/course/{id}/assignment/new(id=${course.courseId})}" class="btn btn-primary"><i class="fas fa-plus"></i> 새 과제</a>
+                    <a th:href="@{/professor/course/{id}/delete-confirm(id=${course.courseId})}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> 삭제</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

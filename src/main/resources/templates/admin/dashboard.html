@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        /* [FIX] a 태그 스타일링 */
+        .stat-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .stat-link:hover {
+            transform: translateY(-8px); /* 마우스 올렸을 때 위로 떠오르는 효과 */
+        }
+        .stat-card {
+            background: var(--card-background-color);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            border-top: 5px solid;
+        }
+        .stat-card .stat-number {
+            font-size: 3em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .stat-card .stat-label {
+            color: var(--text-light-color);
+            font-size: 1.1em;
+        }
+        .stat-card.pending { border-color: var(--warning-color); }
+        .stat-card.pending .stat-number { color: var(--warning-color); }
+        .stat-card.approved { border-color: var(--success-color); }
+        .stat-card.approved .stat-number { color: var(--success-color); }
+        .stat-card.rejected { border-color: var(--error-color); }
+        .stat-card.rejected .stat-number { color: var(--error-color); }
+        .stat-card.total { border-color: var(--info-color); }
+        .stat-card.total .stat-number { color: var(--info-color); }
+    </style>
+</head>
+<body class="admin-page">
+
+<div class="header admin-header">
+    <h1><i class="fas fa-user-shield"></i> 관리자 대시보드</h1>
+    <nav class="header-nav">
+        <a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="stats-grid">
+        <a th:href="@{/admin/users/pending}" class="stat-link">
+            <div class="stat-card pending">
+                <div class="stat-number" th:text="${pendingCount}">0</div>
+                <div class="stat-label">승인 대기</div>
+            </div>
+        </a>
+        <a th:href="@{/admin/users(status='APPROVED')}" class="stat-link">
+            <div class="stat-card approved">
+                <div class="stat-number" th:text="${approvedCount}">0</div>
+                <div class="stat-label">승인된 사용자</div>
+            </div>
+        </a>
+        <a th:href="@{/admin/users/rejected}" class="stat-link">
+            <div class="stat-card rejected">
+                <div class="stat-number" th:text="${rejectedCount}">0</div>
+                <div class="stat-label">거부된 사용자</div>
+            </div>
+        </a>
+        <a th:href="@{/admin/users}" class="stat-link">
+            <div class="stat-card total">
+                <div class="stat-number" th:text="${totalUsers}">0</div>
+                <div class="stat-label">전체 사용자</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="section-header">
+            <h3><i class="fas fa-rocket"></i> 빠른 작업</h3>
+        </div>
+        <a th:href="@{/admin/users/pending}" class="btn btn-warning"><i class="fas fa-clock"></i> 승인 대기 목록 (<span th:text="${pendingCount}">0</span>)</a>
+        <a th:href="@{/admin/users/rejected}" class="btn btn-danger"><i class="fas fa-ban"></i> 거부된 사용자 (<span th:text="${rejectedCount}">0</span>)</a>
+        <a th:href="@{/admin/users}" class="btn btn-info"><i class="fas fa-users"></i> 전체 사용자 관리</a>
+    </div>
+
+</div>
+</body>
+</html>

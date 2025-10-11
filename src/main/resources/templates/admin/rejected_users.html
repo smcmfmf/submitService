@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>거부된 사용자 관리</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* '거부된 사용자' 페이지 전용 헤더 스타일 */
+        .header.rejected-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+    </style>
+</head>
+<body class="admin-page">
+
+<div class="header rejected-header">
+    <h1><i class="fas fa-ban"></i> 거부된 사용자</h1>
+    <nav class="header-nav">
+        <a th:href="@{/admin/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로</a>
+        <a th:href="@{/admin/users/pending}" class="btn btn-warning" style="color: white !important;">승인 대기 목록</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="page-header">
+        <h2 class="page-title" style="color: var(--error-color);">거부된 사용자 목록</h2>
+        <p class="page-subtitle">실수로 거부된 사용자를 다시 승인할 수 있습니다.</p>
+    </div>
+
+    <div th:if="${#lists.isEmpty(rejectedUsers)}" class="card" style="text-align: center; padding: 60px;">
+        <p style="font-size: 1.2em; color: var(--text-light-color);">거부된 사용자가 없습니다.</p>
+    </div>
+
+    <div class="card" th:unless="${#lists.isEmpty(rejectedUsers)}" th:each="user : ${rejectedUsers}" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h3 th:text="${user.name}" style="margin:0 0 10px;"></h3>
+                <p style="color: var(--text-light-color); margin:0;">
+                    <i class="fas fa-envelope"></i> <span th:text="${user.email}"></span> |
+                    <i class="fas fa-user-tag"></i> <span th:text="${user.role.displayName}"></span>
+                </p>
+                <p th:if="${user.statusReason}" th:text="'거부 사유: ' + ${user.statusReason}" style="color: var(--error-color); font-weight: 500; margin-top: 10px;"></p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <form th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post">
+                    <input type="text" name="reason" placeholder="재승인 사유 (선택)" class="form-input" style="width: auto; display: inline-block;">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('이 사용자를 다시 승인하시겠습니까?')">
+                        <i class="fas fa-check"></i> 다시 승인
+                    </button>
+                </form>
+                <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-secondary" title="상세보기"><i class="fas fa-search"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

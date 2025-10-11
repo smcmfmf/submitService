@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 과목 만들기 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-plus-circle"></i> 새 과목 만들기</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로 돌아가기</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title">📚 새 과목 정보 입력</h2>
+            <p class="page-subtitle">과목명과 코드를 입력하여 새로운 과목을 개설하세요.</p>
+        </div>
+
+        <form th:action="@{/professor/course/new}" method="post" th:object="${course}">
+            <div class="form-group">
+                <label for="name" class="form-label">과목명</label>
+                <input type="text" id="name" th:field="*{name}" class="form-input" placeholder="예: 웹프로그래밍 기초" required>
+            </div>
+            <div class="form-group">
+                <label for="code" class="form-label">과목코드</label>
+                <input type="text" id="code" th:field="*{code}" class="form-input" placeholder="예: CS101" required>
+                <p class="form-help-text">학생들이 수강신청 시 사용할 고유한 코드입니다.</p>
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/professor/dashboard}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-primary">과목 생성하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

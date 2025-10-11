@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마감일 연장 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+<div class="header professor-header">
+    <h1><i class="fas fa-calendar-plus"></i> 마감일 연장</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}"><i class="fas fa-arrow-left"></i> 과제 목록으로</a>
+    </nav>
+</div>
+<div class="container form-container">
+    <div class="card">
+        <div class="alert alert-warning">
+            새로운 마감일은 현재 마감일보다 이후로만 설정 가능합니다.
+        </div>
+        <form th:action="@{/professor/assignment/{id}/extend(id=${assignment.assignmentId})}" method="post">
+            <div class="form-group">
+                <label class="form-label">현재 마감일</label>
+                <input type="text" class="form-input" th:value="${#temporals.format(assignment.deadline, 'yyyy-MM-dd HH:mm')}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="newDeadline" class="form-label">새로운 마감일</label>
+                <input type="datetime-local" id="newDeadline" name="newDeadline" class="form-input" required>
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-warning">마감일 연장</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

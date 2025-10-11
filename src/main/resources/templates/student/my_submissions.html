@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 제출물 목록 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .submissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .submission-card {
+            background-color: var(--card-background-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-header {
+            padding: 20px 25px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        .card-body {
+            padding: 25px;
+            flex-grow: 1;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: var(--text-light-color);
+        }
+        .meta-item i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .card-footer {
+            padding: 20px 25px;
+            background-color: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fas fa-file-alt"></i> 내 제출물</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로 돌아가기</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">내가 제출한 과제 목록</h2>
+    </div>
+
+    <div th:if="${#lists.isEmpty(submissions)}" class="card" style="text-align: center; padding: 60px;">
+        <p style="font-size: 1.2em; color: var(--text-light-color);">아직 제출한 과제가 없습니다.</p>
+    </div>
+
+    <div class="submissions-grid" th:unless="${#lists.isEmpty(submissions)}">
+        <div th:each="submission : ${submissions}" class="submission-card">
+            <div class="card-header">
+                <h3 th:text="${submission.assignment.title}">과제 제목</h3>
+            </div>
+            <div class="card-body">
+                <div class="meta-item"><i class="fas fa-book"></i> <span th:text="${submission.assignment.course.name}">과목명</span></div>
+                <div class="meta-item"><i class="fas fa-calendar-alt"></i> <span th:text="'제출일: ' + ${#temporals.format(submission.submittedAt, 'yyyy/MM/dd HH:mm')}"></span></div>
+
+                <div th:if="${submission.grade != null}" class="alert alert-success" style="margin-top: 20px; text-align:center;">
+                    <strong style="font-size: 1.5em;" th:text="'💯 ' + ${submission.grade} + '점'"></strong>
+                </div>
+                <div th:unless="${submission.grade != null}" class="alert alert-warning" style="margin-top: 20px; text-align:center;">
+                    <strong>⏳ 채점 대기 중</strong>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div th:if="${submission.isGraded}" class="status-badge status-approved">평가 완료</div>
+                <div th:unless="${submission.isGraded}" class="status-badge status-pending">평가 미완료</div>
+                <a th:href="@{/student/assignment/{id}/my-submission(id=${submission.assignment.assignmentId})}" class="btn btn-info">상세보기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

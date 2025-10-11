@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .form-card {
+            background-color: var(--card-background-color);
+            padding: 45px 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            /* [FIX] max-width를 450px로 수정 */
+            max-width: 450px;
+            margin: 20px;
+            text-align: center;
+        }
+        .logo-section {
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            font-size: 4.5em;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        .logo-title {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+        }
+        .form-group {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<div class="form-card">
+    <div class="logo-section">
+        <div class="logo-icon">✨</div>
+        <h1 class="logo-title">새로운 계정 만들기</h1>
+    </div>
+
+    <form th:action="@{/signup}" method="post" th:object="${user}">
+        <div class="form-group">
+            <label for="name" class="form-label">이름</label>
+            <input type="text" id="name" th:field="*{name}" class="form-input" placeholder="실명을 입력해주세요" required>
+        </div>
+        <div class="form-group">
+            <label for="email" class="form-label">이메일</label>
+            <input type="email" id="email" th:field="*{email}" class="form-input" placeholder="example@kopo.ac.kr" required>
+        </div>
+        <div class="form-group">
+            <label for="password" class="form-label">비밀번호</label>
+            <input type="password" id="password" th:field="*{password}" class="form-input" placeholder="영어, 숫자, 특수문자를 포함한 8자 이상" required>
+        </div>
+        <div class="form-group">
+            <label for="role" class="form-label">역할 선택</label>
+            <select id="role" th:field="*{role}" class="form-select" required>
+                <option value="" disabled selected>역할을 선택해주세요</option>
+                <option value="STUDENT">🎓 학생</option>
+                <option value="PROFESSOR">👨‍🏫 교수</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 10px;">가입하기</button>
+    </form>
+
+    <p style="margin-top: 30px; color: var(--text-light-color);">이미 계정이 있으신가요? <a th:href="@{/login}" style="font-weight: 600; color: var(--primary-color);">로그인</a></p>
+</div>
+</body>
+</html>

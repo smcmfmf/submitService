@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강 철회 확인 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: #f8f9fa;
+        }
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .stat-card .label {
+            color: var(--text-light-color);
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fas fa-times-circle"></i> 수강 철회</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로 돌아가기</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title">⚠️ 수강 철회 확인</h2>
+            <p class="page-subtitle" th:text="${course.name} + ' 과목을 철회하시겠습니까?'"></p>
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>경고:</strong> 수강을 철회하면 제출했던 모든 과제와 성적 기록이 <strong>영구적으로 삭제</strong>되며, 복구할 수 없습니다.
+        </div>
+
+        <h4>삭제될 데이터 요약</h4>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="number" th:text="${withdrawInfo.totalAssignments}">0</div>
+                <div class="label">총 과제</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" th:text="${withdrawInfo.submittedAssignments}">0</div>
+                <div class="label">제출한 과제</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" th:text="${withdrawInfo.gradedSubmissions}">0</div>
+                <div class="label">평가된 과제</div>
+            </div>
+        </div>
+
+        <form th:action="@{/student/course/{courseId}/withdraw(courseId=${course.courseId})}" method="post">
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="confirmWithdraw" style="width: auto;" required>
+                <label for="confirmWithdraw" style="margin: 0; font-weight: normal;">위 내용을 모두 확인했으며, 데이터 삭제에 동의합니다.</label>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/student/dashboard}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-danger" id="withdrawBtn" disabled>수강 철회 실행</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const confirmCheckbox = document.getElementById('confirmWithdraw');
+    const withdrawButton = document.getElementById('withdrawBtn');
+    confirmCheckbox.addEventListener('change', function() {
+        withdrawButton.disabled = !this.checked;
+    });
+</script>
+
+</body>
+</html>

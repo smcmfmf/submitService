@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 대시보드 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .welcome-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+        .welcome-section h2 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .welcome-section p {
+            margin: 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        .course-card {
+            background-color: var(--card-background-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 5px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+        .course-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4em;
+        }
+        .course-meta {
+            color: var(--text-light-color);
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+        .course-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fas fa-user-graduate"></i> 학생 대시보드</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/submissions}"><i class="fas fa-file-alt"></i> 내 제출물</a>
+        <a th:href="@{/student/enroll}"><i class="fas fa-plus-circle"></i> 수강신청</a>
+        <a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> 로그아웃</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="welcome-section">
+        <h2 th:text="'안녕하세요, ' + ${session.user.name} + '님!'">안녕하세요, 학생님!</h2>
+        <p>오늘도 열심히 공부하는 하루 되세요! 📚</p>
+    </div>
+
+    <div class="card">
+        <div class="section-header">
+            <h2><i class="fas fa-book-open"></i> 수강 중인 과목</h2>
+            <a th:href="@{/student/enroll}" class="btn btn-primary"><i class="fas fa-plus"></i> 과목 추가하기</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(courses)}" style="text-align: center; padding: 60px 20px;">
+            <p style="font-size: 1.2em; color: var(--text-light-color);">아직 수강 중인 과목이 없습니다.</p>
+            <p>지금 바로 첫 과목을 신청해보세요!</p>
+        </div>
+
+        <div class="courses-grid" th:unless="${#lists.isEmpty(courses)}">
+            <div th:each="course : ${courses}" class="course-card">
+                <div>
+                    <h3 th:text="${course.name}">과목명</h3>
+                    <div class="course-meta">
+                        <span style="margin-right: 15px;">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span th:text="${course.professor.name}">교수명</span>
+                        </span>
+                        <span>
+                            <i class="fas fa-barcode"></i>
+                            <span th:text="${course.code}">과목코드</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="course-actions">
+                    <a th:href="@{/student/course/{id}(id=${course.courseId})}" class="btn btn-info"><i class="fas fa-tasks"></i> 과제 보기</a>
+                    <a th:href="@{/student/course/{courseId}/withdraw-confirm(courseId=${course.courseId})}" class="btn btn-danger"><i class="fas fa-times-circle"></i> 수강 철회</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

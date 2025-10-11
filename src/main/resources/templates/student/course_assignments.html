@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${course.name} + ' - 과제 목록'"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .assignment-card {
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            background-color: var(--card-background-color);
+            transition: box-shadow 0.3s;
+        }
+        .assignment-card:hover {
+            box-shadow: var(--card-shadow);
+        }
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        .assignment-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin:0;
+        }
+        .deadline-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+        }
+        .deadline-past { background-color: var(--text-light-color); }
+        .deadline-soon { background-color: var(--warning-color); color: #333; }
+        .deadline-safe { background-color: var(--success-color); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 th:text="${course.name}">과목명</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로 돌아가기</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">📋 과제 목록</h2>
+        <p class="page-subtitle" th:text="'담당 교수: ' + ${course.professor.name}">담당 교수</p>
+    </div>
+
+    <div th:if="${#lists.isEmpty(assignments)}" class="card text-center" style="padding: 60px;">
+        <p style="font-size: 1.2em; color: var(--text-light-color);">아직 등록된 과제가 없습니다.</p>
+        <p>새로운 과제가 등록되면 여기에 표시됩니다.</p>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(assignments)}">
+        <div th:each="assignment, iter : ${assignments}" class="assignment-card">
+            <div class="assignment-header">
+                <h3 class="assignment-title" th:text="${assignment.title}">과제 제목</h3>
+                <span class="deadline-badge"
+                      th:classappend="${#temporals.createNow().isAfter(assignment.deadline)} ? 'deadline-past' : (${#temporals.day(assignment.deadline) - #temporals.day(#temporals.createNow()) < 3} ? 'deadline-soon' : 'deadline-safe')"
+                      th:text="'마감: ' + ${#temporals.format(assignment.deadline, 'MM/dd HH:mm')}">마감일</span>
+            </div>
+
+            <p style="color: var(--text-light-color);" th:text="${assignment.description}">과제 설명</p>
+
+            <div th:if="${assignment.attachmentUrl}" class="alert alert-info" style="margin-top:20px;">
+                <i class="fas fa-paperclip"></i> <strong>첨부파일:</strong>
+                <a th:href="${assignment.attachmentUrl}" target="_blank" style="margin-left: 10px; font-weight:600;">다운로드</a>
+            </div>
+
+            <div style="margin-top: 25px; display:flex; gap: 10px;">
+                <a th:href="@{/student/assignment/{id}/submit(id=${assignment.assignmentId})}" class="btn btn-primary"><i class="fas fa-upload"></i> 과제 제출</a>
+                <a th:href="@{/student/assignment/{id}/my-submission(id=${assignment.assignmentId})}" class="btn btn-secondary"><i class="fas fa-eye"></i> 제출물 확인</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

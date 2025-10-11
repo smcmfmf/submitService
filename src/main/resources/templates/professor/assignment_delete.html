@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과제 삭제 확인 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-exclamation-triangle"></i> 과제 삭제 확인</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}"><i class="fas fa-arrow-left"></i> 과제 목록으로</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title" style="color: var(--error-color);">⚠️ 과제 삭제 경고</h2>
+            <p class="page-subtitle" th:text="${assignment.title} + ' 과제를 삭제하시겠습니까?'"></p>
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>경고:</strong> 과제를 삭제하면 모든 학생들의 관련 제출물(<strong><span th:text="${submissionCount}">0</span>개</strong>)도 함께 <strong>영구적으로 삭제</strong>되며, 복구할 수 없습니다.
+        </div>
+
+        <form th:action="@{/professor/assignment/{id}/delete(id=${assignment.assignmentId})}"
+              method="post"
+              class="form-actions"
+              onsubmit="return confirmAssignmentDelete()">
+
+            <a th:href="@{/professor/course/{id}(id=${assignment.course.courseId})}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-danger">삭제 확인</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function confirmAssignmentDelete() {
+        const assignmentTitle = '[[${assignment.title}]]';
+        const submissionCount = [[${submissionCount}]];
+
+        let message = `정말로 '${assignmentTitle}' 과제를 삭제하시겠습니까?\n\n`;
+        if (submissionCount > 0) {
+            message += `연결된 학생 제출물 ${submissionCount}개도 함께 삭제됩니다.\n`;
+        }
+        message += "이 작업은 되돌릴 수 없습니다.";
+
+        return confirm(message);
+    }
+</script>
+
+</body>
+</html>

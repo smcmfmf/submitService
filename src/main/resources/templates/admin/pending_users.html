@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>승인 대기 사용자</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-page">
+<div class="header admin-header">
+    <h1><i class="fas fa-clock"></i> 승인 대기 사용자</h1>
+    <nav class="header-nav"><a th:href="@{/admin/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로</a></nav>
+</div>
+<div class="container">
+    <div class="card" th:each="user : ${pendingUsers}">
+        <h3 th:text="${user.name}"></h3>
+        <p th:text="'이메일: ' + ${user.email} + ' | 역할: ' + ${user.role.displayName}"></p>
+        <form th:action="@{/admin/users/{id}/approve(id=${user.id})}" method="post" style="display: inline-block;">
+            <button type="submit" class="btn btn-success">승인</button>
+        </form>
+        <form th:action="@{/admin/users/{id}/reject(id=${user.id})}" method="post" style="display: inline-block;">
+            <button type="submit" class="btn btn-danger">거부</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

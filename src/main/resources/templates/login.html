@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* [FIX] 모든 요소에 box-sizing을 적용하여 너비 계산 오류 방지 */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background-color: var(--card-background-color);
+            padding: 45px 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 450px;
+            margin: 20px;
+            text-align: center;
+        }
+        .logo-section {
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            font-size: 4.5em;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        .logo-title {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+        }
+        .logo-subtitle {
+            color: var(--text-light-color);
+            font-size: 1.1em;
+            margin: 0;
+        }
+        .form-group {
+            position: relative;
+            text-align: left;
+        }
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+            transition: color 0.3s ease;
+        }
+        .form-input {
+            padding-left: 50px;
+        }
+        .form-input:focus + .input-icon {
+            color: var(--primary-color);
+        }
+        .divider {
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #ccc;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+        .divider:not(:empty)::before { margin-right: .25em; }
+        .divider:not(:empty)::after { margin-left: .25em; }
+        .test-accounts {
+            margin-top: 30px;
+            font-size: 14px;
+            color: var(--text-light-color);
+        }
+        .test-accounts-toggle {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .test-accounts-details {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .test-account-item {
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .test-account-item:hover {
+            background-color: #f0f2f5;
+        }
+        .test-account-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="logo-section">
+        <div class="logo-icon">🎓</div>
+        <h1 class="logo-title">과제 제출 시스템</h1>
+        <p class="logo-subtitle">학습 관리의 새로운 경험</p>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label for="email" class="form-label" style="display:none;">이메일</label>
+            <input type="email" name="email" id="email" class="form-input" placeholder="이메일 주소" required>
+            <i class="input-icon fas fa-envelope"></i>
+        </div>
+        <div class="form-group">
+            <label for="password" class="form-label" style="display:none;">비밀번호</label>
+            <input type="password" name="password" id="password" class="form-input" placeholder="비밀번호" required>
+            <i class="input-icon fas fa-lock"></i>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px 24px; font-size: 16px;">로그인</button>
+    </form>
+
+    <div class="divider">또는</div>
+
+    <a th:href="@{/signup}" class="btn btn-info" style="width: 100%;">✨ 새 계정 만들기</a>
+
+    <div class="test-accounts">
+        <p><span id="toggle-test-accounts" class="test-accounts-toggle">🧪 테스트 계정 정보 보기</span></p>
+        <div id="test-accounts-details" class="test-accounts-details">
+            <div class="test-account-item"><strong>🔐 관리자:</strong> admin@kopo.ac.kr / admin123</div>
+            <div class="test-account-item"><strong>👨‍🏫 교수:</strong> prof@kopo.ac.kr / password123</div>
+            <div class="test-account-item"><strong>👨‍🎓 학생1:</strong> student1@kopo.ac.kr / password123</div>
+            <div class="test-account-item"><strong>👨‍🎓 학생2:</strong> student2@kopo.ac.kr / password123</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('toggle-test-accounts').addEventListener('click', function() {
+        var details = document.getElementById('test-accounts-details');
+        if (details.style.display === 'block') {
+            details.style.display = 'none';
+            this.textContent = '🧪 테스트 계정 정보 보기';
+        } else {
+            details.style.display = 'block';
+            this.textContent = '▲ 정보 숨기기';
+        }
+    });
+
+    document.querySelector('.test-accounts-details').addEventListener('click', function(e) {
+        let target = e.target.closest('.test-account-item');
+        if (target) {
+            const credentialsText = target.textContent.split(': ')[1];
+            const credentials = credentialsText.split(' / ');
+            document.getElementById('email').value = credentials[0];
+            document.getElementById('password').value = credentials[1];
+        }
+    });
+</script>
+</body>
+</html>

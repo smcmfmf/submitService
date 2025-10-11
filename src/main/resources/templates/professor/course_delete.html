@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과목 삭제 확인 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-exclamation-triangle"></i> 과목 삭제 확인</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title" style="color: var(--error-color);">⚠️ 과목 삭제 경고</h2>
+            <p class="page-subtitle" th:text="${course.name} + ' 과목을 삭제하시겠습니까?'"></p>
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>매우 중요:</strong> 과목을 삭제하면 아래의 모든 관련 데이터가 <strong>영구적으로 삭제</strong>되며, 이 작업은 절대로 되돌릴 수 없습니다.
+        </div>
+
+        <h4>삭제될 데이터 요약</h4>
+        <ul>
+            <li th:text="'관련 과제: ' + ${deleteInfo.assignmentCount} + '개'"></li>
+            <li th:text="'학생 제출물: ' + ${deleteInfo.submissionCount} + '개'"></li>
+            <li th:text="'수강생 정보: ' + ${deleteInfo.enrollmentCount} + '명'"></li>
+        </ul>
+
+        <form th:action="@{/professor/course/{id}/delete(id=${course.courseId})}"
+              method="post"
+              class="form-actions"
+              onsubmit="return confirmDelete()">
+
+            <a th:href="@{/professor/dashboard}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-danger">삭제 확인</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function confirmDelete() {
+        // 사용자에게 삭제 여부를 다시 확인하는 confirm 창을 띄웁니다.
+        const courseName = '[[${course.name}]]';
+        const message = `정말로 '${courseName}' 과목을 삭제하시겠습니까?\n\n관련된 모든 과제와 제출물이 영구적으로 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.`;
+
+        // 사용자가 '확인'을 누르면 true, '취소'를 누르면 false가 반환됩니다.
+        return confirm(message);
+    }
+</script>
+
+</body>
+</html>

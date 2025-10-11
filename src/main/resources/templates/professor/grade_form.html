@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채점하기 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-edit"></i> 과제 채점</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}"><i class="fas fa-arrow-left"></i> 제출물 목록으로</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title" th:text="${submission.assignment.title}"></h2>
+            <p class="page-subtitle" th:text="${submission.student.name} + ' 학생의 제출물'"></p>
+        </div>
+
+        <div class="alert alert-info">
+            <a th:href="${submission.fileUrl}" class="btn btn-secondary"><i class="fas fa-download"></i> 제출 파일 다운로드</a>
+            <span style="margin-left: 15px;">파일을 확인한 후 채점을 진행해주세요.</span>
+        </div>
+
+        <div th:if="${submission.isGraded}" class="alert alert-warning">
+            <strong>🔒 평가 완료</strong>
+            <p>이 제출물은 이미 평가가 완료되어 수정할 수 없습니다.</p>
+        </div>
+
+        <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post" th:unless="${submission.isGraded}">
+            <div class="form-group">
+                <label for="grade" class="form-label">점수 (0-100)</label>
+                <input type="number" id="grade" name="grade" min="0" max="100" step="0.1" th:value="${submission.grade}" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label for="feedback" class="form-label">피드백</label>
+                <textarea id="feedback" name="feedback" th:text="${submission.feedback}" class="form-textarea" placeholder="학생에게 전달될 피드백을 작성해주세요."></textarea>
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-warning" th:formaction="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"><i class="fas fa-save"></i> 임시 저장</button>
+                <button type="submit" class="btn btn-success" id="completeBtn" th:formaction="@{/professor/submission/{id}/complete(id=${submission.submissionId})}"><i class="fas fa-check-circle"></i> 평가 완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const completeBtn = document.getElementById('completeBtn');
+
+    if (completeBtn) {
+        completeBtn.addEventListener('click', function(event) {
+            const confirmed = confirm(
+                '정말로 평가를 완료하시겠습니까?\n\n' +
+                '⚠️ 주의사항:\n' +
+                '• 평가 완료 후에는 점수와 피드백을 수정할 수 없습니다.\n' +
+                '• 학생도 더 이상 과제를 재제출할 수 없습니다.\n\n' +
+                '이 작업은 되돌릴 수 없습니다.'
+            );
+
+            // 사용자가 '취소'를 누르면 폼 제출을 막습니다.
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

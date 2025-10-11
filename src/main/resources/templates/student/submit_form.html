@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과제 제출 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* 파일 업로드 영역 스타일 수정 */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px; /* 기존 40px에서 줄임 */
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex; /* 가로 배치를 위해 flex 사용 */
+            align-items: center;
+            justify-content: center;
+            gap: 15px; /* 아이콘과 텍스트 사이 간격 */
+        }
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: #f9fafb;
+        }
+        /* 아이콘 크기 줄임 */
+        .file-upload-area i {
+            font-size: 1.8em; /* 기존 3em에서 줄임 */
+            color: var(--text-light-color);
+            transition: color 0.3s ease;
+        }
+        .file-upload-area:hover i {
+            color: var(--primary-color);
+        }
+        .file-upload-area p {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fas fa-upload"></i> 과제 제출</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}"><i class="fas fa-arrow-left"></i> 과제 목록으로</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title" th:text="${assignment.title}">과제 제목</h2>
+            <p class="page-subtitle" th:text="'마감일: ' + ${#temporals.format(assignment.deadline, 'yyyy년 MM월 dd일 HH:mm')}"></p>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div th:if="${existingSubmission != null and existingSubmission.isGraded}" class="alert alert-danger">
+            <strong>🔒 평가 완료</strong>
+            <p style="margin: 5px 0 0;">이 과제는 평가가 완료되어 더 이상 제출할 수 없습니다.</p>
+            <a th:href="@{/student/assignment/{id}/my-submission(id=${assignment.assignmentId})}" class="btn btn-info" style="margin-top: 15px;">내 제출물 확인</a>
+        </div>
+
+        <div th:if="${existingSubmission == null or !existingSubmission.isGraded}">
+            <div th:if="${existingSubmission != null}" class="alert alert-warning">
+                <strong>🔄 재제출 안내</strong>
+                <p style="margin: 5px 0 0;">새로운 파일을 제출하면 기존 파일이 대체됩니다.</p>
+            </div>
+
+            <form th:action="@{/student/assignment/{assignmentId}/submit(assignmentId=${assignment.assignmentId})}"
+                  method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file" class="form-label">제출 파일</label>
+                    <label for="file" class="file-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p id="file-name">파일을 선택하려면 여기를 클릭하세요</p>
+                    </label>
+                    <input type="file" id="file" name="file" required>
+                    <p class="form-help-text">제출할 과제 파일을 선택해주세요.</p>
+                </div>
+                <div class="form-actions">
+                    <a th:href="@{/student/course/{courseId}(courseId=${assignment.course.courseId})}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary" th:text="${existingSubmission != null} ? '재제출하기' : '제출하기'"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const fileInput = document.getElementById('file');
+    const fileNameDisplay = document.getElementById('file-name');
+    if (fileInput) {
+        fileInput.addEventListener('change', () => {
+            fileNameDisplay.textContent = fileInput.files[0] ? fileInput.files[0].name : '파일을 선택하려면 여기를 클릭하세요';
+        });
+    }
+</script>
+</body>
+</html>

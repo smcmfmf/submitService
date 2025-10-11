@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강신청 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="header">
+    <h1><i class="fas fa-plus-circle"></i> 수강신청</h1>
+    <nav class="header-nav">
+        <a th:href="@{/student/dashboard}"><i class="fas fa-arrow-left"></i> 대시보드로 돌아가기</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title">📚 수강신청</h2>
+            <p class="page-subtitle">수강하고 싶은 과목의 코드를 입력해주세요.</p>
+        </div>
+
+        <div class="alert alert-info">
+            <strong>💡 사용 가능한 과목 코드 예시</strong>
+            <ul style="margin: 10px 0 0; padding-left: 20px;">
+                <li>JAVA101 - 자바 프로그래밍</li>
+                <li>DB201 - 데이터베이스</li>
+                <li>WEB301 - 웹 프로그래밍</li>
+            </ul>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <form th:action="@{/student/enroll}" method="post">
+            <div class="form-group">
+                <label for="courseCode" class="form-label">과목 코드</label>
+                <input type="text" id="courseCode" name="courseCode" class="form-input" placeholder="예: JAVA101" required>
+                <p class="form-help-text">교수님께 전달받은 과목 코드를 정확히 입력해주세요.</p>
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/student/dashboard}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-primary">수강신청</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

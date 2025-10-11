@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 계정 설정 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .form-card {
+            background-color: var(--card-background-color);
+            padding: 45px 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+            text-align: center;
+        }
+        .logo-section {
+            margin-bottom: 35px;
+        }
+        .logo-icon {
+            font-size: 4.5em;
+            margin-bottom: 15px;
+            color: #f39c12; /* 주황색 아이콘 */
+        }
+        .logo-title {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #d35400;
+        }
+    </style>
+</head>
+<body class="admin-page">
+<div class="form-card">
+    <div class="logo-section">
+        <div class="logo-icon">🔐</div>
+        <h1 class="logo-title">최초 관리자 계정 설정</h1>
+    </div>
+
+    <div class="alert alert-warning">
+        <strong>중요:</strong> 이 계정은 시스템의 모든 권한을 갖는 최초 관리자 계정입니다. 안전하게 정보를 관리해주세요.
+    </div>
+
+    <form th:action="@{/setup-admin}" method="post" th:object="${user}" style="text-align: left;">
+        <div class="form-group">
+            <label for="name" class="form-label">관리자 이름</label>
+            <input type="text" id="name" th:field="*{name}" class="form-input" placeholder="관리자 이름을 입력하세요" required>
+        </div>
+        <div class="form-group">
+            <label for="email" class="form-label">관리자 이메일</label>
+            <input type="email" id="email" th:field="*{email}" class="form-input" placeholder="admin@example.com" required>
+        </div>
+        <div class="form-group">
+            <label for="password" class="form-label">관리자 비밀번호</label>
+            <input type="password" id="password" th:field="*{password}" class="form-input" placeholder="안전한 비밀번호" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 10px;">관리자 계정 생성</button>
+    </form>
+
+    <div th:if="${error}" class="alert alert-danger" style="margin-top: 20px;" th:text="${error}"></div>
+</div>
+</body>
+</html>

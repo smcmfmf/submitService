@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 과제 만들기 - 과제 제출 시스템</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="professor-page">
+
+<div class="header professor-header">
+    <h1><i class="fas fa-plus-circle"></i> 새 과제 만들기</h1>
+    <nav class="header-nav">
+        <a th:href="@{/professor/course/{id}(id=${courseId})}"><i class="fas fa-arrow-left"></i> 과제 목록으로</a>
+    </nav>
+</div>
+
+<div class="container form-container">
+    <div class="card">
+        <div class="page-header" style="text-align: center;">
+            <h2 class="page-title">📝 새 과제 정보 입력</h2>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <form th:action="@{/professor/course/{courseId}/assignment/new(courseId=${courseId})}"
+              th:object="${assignment}" method="post" enctype="multipart/form-data" id="assignmentForm">
+
+            <div class="form-group">
+                <label for="title" class="form-label">과제 제목</label>
+                <input type="text" id="title" th:field="*{title}" class="form-input" placeholder="학생들이 이해하기 쉬운 제목을 입력하세요" required>
+            </div>
+            <div class="form-group">
+                <label for="description" class="form-label">과제 설명</label>
+                <textarea id="description" th:field="*{description}" class="form-textarea" placeholder="과제의 목표, 요구사항, 제출 형식 등을 자세히 설명해주세요." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="deadline" class="form-label">마감일</label>
+                <input type="datetime-local" id="deadline" th:field="*{deadline}" class="form-input" required>
+                <div id="deadlineError" class="alert alert-danger" style="display: none; margin-top: 10px;">
+                    마감일은 현재 시간 이후로 설정해야 합니다.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="attachmentFile" class="form-label">첨부파일 (선택)</label>
+                <input type="file" id="attachmentFile" name="attachmentFile" class="form-input">
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/professor/course/{id}(id=${courseId})}" class="btn btn-secondary">취소</a>
+                <button type="submit" id="submitBtn" class="btn btn-primary">과제 생성하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deadlineInput = document.getElementById('deadline');
+        const deadlineError = document.getElementById('deadlineError');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 현재 시간을 YYYY-MM-DDTHH:MM 형식으로 변환하는 함수 (타임존 문제 해결)
+        function getLocalISOString(date) {
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+            return localDate.toISOString().slice(0, 16);
+        }
+
+        const now = new Date();
+        const minDateTime = getLocalISOString(now);
+
+        // 1. 마감일 입력의 최소값을 현재 시간으로 설정
+        deadlineInput.setAttribute('min', minDateTime);
+
+        // 2. 페이지 로드 시 기본 마감일을 7일 후로 설정 (값이 비어있을 경우)
+        if (!deadlineInput.value) {
+            const defaultDeadline = new Date();
+            defaultDeadline.setDate(now.getDate() + 7);
+            defaultDeadline.setHours(23, 59);
+            deadlineInput.value = getLocalISOString(defaultDeadline);
+        }
+
+        // 3. 실시간 마감일 유효성 검사 함수
+        function validateDeadline() {
+            const selectedDate = new Date(deadlineInput.value);
+            const currentDate = new Date();
+
+            if (selectedDate < currentDate) {
+                deadlineError.style.display = 'block';
+                submitBtn.disabled = true;
+            } else {
+                deadlineError.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // input 값이 변경될 때마다 유효성 검사 실행
+        deadlineInput.addEventListener('input', validateDeadline);
+
+        // 페이지 로드 시 초기 유효성 검사 실행
+        validateDeadline();
+    });
+</script>
+
+</body>
+</html>

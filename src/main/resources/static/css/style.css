@@ -1,0 +1,255 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+:root {
+    --primary-color: #4CAF50;
+    --primary-dark-color: #45a049;
+    --secondary-color: #2196F3;
+    --admin-primary-color: #34495e;
+    --admin-dark-color: #2c3e50;
+    --background-color: #f4f7f6;
+    --card-background-color: #ffffff;
+    --text-color: #333;
+    --text-light-color: #6c757d;
+    --border-color: #e9ecef;
+    --error-color: #dc3545;
+    --warning-color: #ffc107;
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --font-family: 'Noto Sans KR', sans-serif;
+    --border-radius: 12px;
+    --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Global Styles --- */
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* --- Header --- */
+.header {
+    background: var(--primary-color);
+    color: white;
+    padding: 20px 40px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header.admin-header {
+    background: var(--admin-primary-color);
+}
+.header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 700;
+}
+.header-nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+.header-nav a:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+/* --- Cards & Sections --- */
+.card {
+    background-color: var(--card-background-color);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 25px;
+}
+.page-header {
+    margin-bottom: 30px;
+}
+.page-title {
+    font-size: 2.2em;
+    font-weight: 700;
+    margin: 0;
+}
+.page-subtitle {
+    font-size: 1.1em;
+    color: var(--text-light-color);
+    margin-top: 5px;
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+.section-header h2, .section-header h3 {
+    margin: 0;
+    font-size: 1.6em;
+}
+
+/* --- Buttons --- */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: var(--primary-dark-color); transform: translateY(-2px); }
+.btn-secondary { background-color: var(--text-light-color); color: white; }
+.btn-secondary:hover { background-color: #5a6268; transform: translateY(-2px); }
+.btn-danger { background-color: var(--error-color); color: white; }
+.btn-danger:hover { background-color: #c82333; transform: translateY(-2px); }
+.btn-warning { background-color: var(--warning-color); color: #212529; }
+.btn-warning:hover { background-color: #e0a800; transform: translateY(-2px); }
+.btn-info { background-color: var(--info-color); color: white; }
+.btn-info:hover { background-color: #138496; transform: translateY(-2px); }
+.btn-admin { background-color: var(--admin-primary-color); color: white; }
+.btn-admin:hover { background-color: var(--admin-dark-color); transform: translateY(-2px); }
+
+/* --- Forms --- */
+.form-container {
+    max-width: 700px;
+    margin: 30px auto;
+}
+.form-group {
+    margin-bottom: 25px;
+}
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 1.1em;
+}
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f9fafb;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+}
+.form-textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+.form-help-text {
+    font-size: 0.9em;
+    color: var(--text-light-color);
+    margin-top: 8px;
+}
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+/* --- Tables --- */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.table th, .table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    font-size: 1em;
+}
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* --- Alerts & Badges --- */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 5px solid;
+    font-weight: 500;
+}
+.alert-success { background-color: #d4edda; color: #155724; border-color: var(--success-color); }
+.alert-warning { background-color: #fff3cd; color: #856404; border-color: var(--warning-color); }
+.alert-danger { background-color: #f8d7da; color: #721c24; border-color: var(--error-color); }
+.alert-info { background-color: #d1ecf1; color: #0c5460; border-color: var(--info-color); }
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.status-approved { background-color: #d4edda; color: #155724; }
+.status-pending { background-color: #fff3cd; color: #856404; }
+.status-rejected { background-color: #f8d7da; color: #721c24; }
+.status-suspended { background-color: #d6d8db; color: #383d41; }
+
+/* --- Professor Theme --- */
+.header.professor-header {
+    background: #3498db;
+}
+
+.professor-page .course-card {
+    border-left-color: var(--info-color);
+}
+
+.professor-page .page-title,
+.professor-page .section-header h2,
+.professor-page .section-header h3 {
+    color: #2980b9;
+}
+
+/* --- Admin Theme --- */
+.header.admin-header {
+    background: #f39c12;
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.admin-page .page-title,
+.admin-page .section-header h2,
+.admin-page .section-header h3 {
+    color: #d35400;
+}
+
+.admin-page .btn-primary {
+    background-color: #f39c12;
+    color: white;
+}
+.admin-page .btn-primary:hover {
+    background-color: #e67e22;
+}
