@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채점하기 - 과제 제출 시스템</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* 점수 선택 버튼을 위한 스타일 */
+        .grade-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .grade-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .grade-btn:hover {
+            background-color: var(--info-color);
+            color: white;
+            border-color: var(--info-color);
+        }
+    </style>
 </head>
 <body class="professor-page">
 
@@ -33,14 +56,32 @@
         </div>
 
         <form th:action="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" method="post" th:unless="${submission.isGraded}">
+
             <div class="form-group">
-                <label for="grade" class="form-label">점수 (0-100)</label>
+                <label class="form-label">점수 간편 선택</label>
+                <div class="grade-buttons">
+                    <button type="button" class="grade-btn" onclick="setGrade(95)">A+ (95)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(90)">A0 (90)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(85)">B+ (85)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(80)">B0 (80)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(75)">C+ (75)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(70)">C0 (70)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(65)">D+ (65)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(60)">D0 (60)</button>
+                    <button type="button" class="grade-btn" onclick="setGrade(0)">F (0)</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="grade" class="form-label">점수 직접 입력 (0-100)</label>
                 <input type="number" id="grade" name="grade" min="0" max="100" step="0.1" th:value="${submission.grade}" class="form-input" required>
             </div>
+
             <div class="form-group">
                 <label for="feedback" class="form-label">피드백</label>
                 <textarea id="feedback" name="feedback" th:text="${submission.feedback}" class="form-textarea" placeholder="학생에게 전달될 피드백을 작성해주세요."></textarea>
             </div>
+
             <div class="form-actions">
                 <a th:href="@{/professor/assignment/{id}/submissions(id=${submission.assignment.assignmentId})}" class="btn btn-secondary">취소</a>
                 <button type="submit" class="btn btn-warning" th:formaction="@{/professor/submission/{id}/grade(id=${submission.submissionId})}"><i class="fas fa-save"></i> 임시 저장</button>
@@ -51,8 +92,12 @@
 </div>
 
 <script>
-    const completeBtn = document.getElementById('completeBtn');
+    // 버튼 클릭 시 점수 입력창에 값을 채우는 함수
+    function setGrade(score) {
+        document.getElementById('grade').value = score;
+    }
 
+    const completeBtn = document.getElementById('completeBtn');
     if (completeBtn) {
         completeBtn.addEventListener('click', function(event) {
             const confirmed = confirm(
@@ -63,7 +108,6 @@
                 '이 작업은 되돌릴 수 없습니다.'
             );
 
-            // 사용자가 '취소'를 누르면 폼 제출을 막습니다.
             if (!confirmed) {
                 event.preventDefault();
             }

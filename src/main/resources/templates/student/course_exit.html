@@ -40,7 +40,7 @@
 <div class="container form-container">
     <div class="card">
         <div class="page-header" style="text-align: center;">
-            <h2 class="page-title">⚠️ 수강 철회 확인</h2>
+            <h2 class="page-title" style="color: var(--error-color);">⚠️ 수강 철회 확인</h2>
             <p class="page-subtitle" th:text="${course.name} + ' 과목을 철회하시겠습니까?'"></p>
         </div>
 
@@ -51,23 +51,26 @@
         <h4>삭제될 데이터 요약</h4>
         <div class="stat-grid">
             <div class="stat-card">
-                <div class="number" th:text="${withdrawInfo.totalAssignments}">0</div>
+                <div class="number" style="color: var(--info-color);" th:text="${withdrawInfo.totalAssignments}">0</div>
                 <div class="label">총 과제</div>
             </div>
             <div class="stat-card">
-                <div class="number" th:text="${withdrawInfo.submittedAssignments}">0</div>
+                <div class="number" style="color: var(--warning-color);" th:text="${withdrawInfo.submittedAssignments}">0</div>
                 <div class="label">제출한 과제</div>
             </div>
             <div class="stat-card">
-                <div class="number" th:text="${withdrawInfo.gradedSubmissions}">0</div>
+                <div class="number" style="color: var(--success-color);" th:text="${withdrawInfo.gradedSubmissions}">0</div>
                 <div class="label">평가된 과제</div>
             </div>
         </div>
 
-        <form th:action="@{/student/course/{courseId}/withdraw(courseId=${course.courseId})}" method="post">
+        <form th:action="@{/student/course/{courseId}/withdraw(courseId=${course.courseId})}"
+              method="post"
+              onsubmit="return confirmWithdrawal()">
+
             <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="confirmWithdraw" style="width: auto;" required>
-                <label for="confirmWithdraw" style="margin: 0; font-weight: normal;">위 내용을 모두 확인했으며, 데이터 삭제에 동의합니다.</label>
+                <input type="checkbox" id="confirmCheckbox" style="width: auto;" required>
+                <label for="confirmCheckbox" style="margin: 0; font-weight: normal;">위 내용을 모두 확인했으며, 데이터 삭제에 동의합니다.</label>
             </div>
 
             <div class="form-actions">
@@ -78,12 +81,30 @@
     </div>
 </div>
 
-<script>
-    const confirmCheckbox = document.getElementById('confirmWithdraw');
+<script th:inline="javascript">
+    const confirmCheckbox = document.getElementById('confirmCheckbox');
     const withdrawButton = document.getElementById('withdrawBtn');
+
+    // 체크박스 상태에 따라 버튼 활성화/비활성화
     confirmCheckbox.addEventListener('change', function() {
         withdrawButton.disabled = !this.checked;
     });
+
+    // [FIX] 확인 창을 띄우는 함수
+    function confirmWithdrawal() {
+        // Thymeleaf 변수를 JavaScript 변수로 안전하게 가져옴
+        const courseName = /*[[${course.name}]]*/ '해당';
+        const submittedAssignments = /*[[${withdrawInfo.submittedAssignments}]]*/ 0;
+
+        let message = `정말로 '${courseName}' 과목의 수강을 철회하시겠습니까?\n\n`;
+        if (submittedAssignments > 0) {
+            message += `제출했던 과제 ${submittedAssignments}개와 관련된 모든 기록이 영구적으로 삭제됩니다.\n`;
+        }
+        message += "이 작업은 되돌릴 수 없습니다.";
+
+        // 사용자가 '확인'을 누르면 true를 반환하여 폼 제출, '취소'를 누르면 false를 반환하여 중단
+        return confirm(message);
+    }
 </script>
 
 </body>

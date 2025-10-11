@@ -36,7 +36,7 @@
                 <th>파일</th>
                 <th>점수</th>
                 <th>상태</th>
-                <th>채점</th>
+                <th>관리</th>
             </tr>
             </thead>
             <tbody>
@@ -44,19 +44,27 @@
                 <td th:text="${submission.student.name}"></td>
                 <td th:text="${#temporals.format(submission.submittedAt, 'yyyy-MM-dd HH:mm')}"></td>
                 <td>
-                    <a th:href="${submission.fileUrl}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 14px;">
+                    <a th:href="${submission.fileUrl}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 14px;" title="다운로드">
                         <i class="fas fa-download"></i>
                     </a>
                 </td>
                 <td>
                     <strong th:if="${submission.grade != null}" th:text="${submission.grade} + '점'"></strong>
+                    <span th:unless="${submission.grade != null}" style="color: var(--text-light-color);">미채점</span>
                 </td>
                 <td>
                     <span th:if="${submission.isGraded}" class="status-badge status-approved">평가 완료</span>
-                    <span th:unless="${submission.isGraded}" class="status-badge status-pending">채점 대기</span>
+                    <span th:if="${!submission.isGraded and submission.grade != null}" class="status-badge" style="background-color: #d1ecf1; color: #0c5460;">임시 저장</span>
+                    <span th:if="${submission.grade == null}" class="status-badge status-pending">채점 대기</span>
                 </td>
                 <td>
-                    <a th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" class="btn btn-info">채점하기</a>
+                        <span th:if="${submission.isGraded}" class="btn btn-secondary" style="cursor: not-allowed; opacity: 0.6;">
+                            <i class="fas fa-check-circle"></i> 완료됨
+                        </span>
+                    <a th:unless="${submission.isGraded}" th:href="@{/professor/submission/{id}/grade(id=${submission.submissionId})}" class="btn btn-info">
+                        <i class="fas fa-edit"></i>
+                        <span th:text="${submission.grade != null ? '수정' : '채점'}"></span>
+                    </a>
                 </td>
             </tr>
             </tbody>
